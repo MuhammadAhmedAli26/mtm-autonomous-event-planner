@@ -3,123 +3,212 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mind to Machine — Autonomous Hackathon Planner</title>
+  <title>Mind to Machine 2026 — Autonomous Event Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #070b0e;
-      --surface: #0f161c;
-      --surface-2: #16222b;
-      --surface-3: #1f303d;
-      --border: #263847;
-      --border-bright: #3b5368;
-      --text: #f0f6fc;
-      --text-muted: #8b9baa;
+      --bg: #06090e;
+      --surface: #0c1219;
+      --surface-elevated: #111a24;
+      --surface-hover: #172433;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-bright: rgba(255, 255, 255, 0.16);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
       --accent: #10b981;
-      --accent-glow: rgba(16, 185, 129, 0.25);
+      --accent-glow: rgba(16, 185, 129, 0.28);
+      --accent-dim: rgba(16, 185, 129, 0.12);
       --success: #10b981;
+      --danger: #f43f5e;
+      --danger-glow: rgba(244, 63, 94, 0.28);
       --warning: #f59e0b;
-      --danger: #ef4444;
-      --danger-glow: rgba(239, 68, 68, 0.25);
-      --info: #38bdf8;
-      --radius: 12px;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --info: #06b6d4;
+      --info-glow: rgba(6, 182, 212, 0.25);
+      --purple: #a855f7;
+      --radius-sm: 8px;
+      --radius: 14px;
+      --radius-lg: 20px;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.06) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(168, 85, 247, 0.04) 0px, transparent 50%);
       color: var(--text);
       font-family: var(--font-sans);
       line-height: 1.5;
-      padding: 16px 24px;
+      padding: 20px 28px;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* Top Navigation Header */
     header {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
       padding: 16px 24px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      margin-bottom: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: #000;
+      box-shadow: 0 0 20px var(--accent-glow);
     }
 
     .brand-title {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 800;
       letter-spacing: -0.02em;
+      color: #fff;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .pulse-dot {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 12px var(--accent);
+      box-shadow: 0 0 10px var(--accent);
       animation: pulse 2s infinite ease-in-out;
     }
 
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.3); opacity: 0.6; }
+      50% { transform: scale(1.4); opacity: 0.5; }
     }
 
-    .badge {
+    .badge-status {
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border: 1px solid transparent;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      gap: 5px;
     }
-    .badge-valid { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
-    .badge-invalid { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
-    .badge-chip { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.75rem; padding: 5px 10px; border-radius: 6px; }
+    .badge-valid { background: rgba(16, 185, 129, 0.15); color: var(--success); border-color: rgba(16, 185, 129, 0.35); }
+    .badge-invalid { background: rgba(244, 63, 94, 0.15); color: var(--danger); border-color: rgba(244, 63, 94, 0.35); }
 
-    .status-chips { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .header-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .metric-pill {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .metric-pill strong { color: #fff; font-weight: 700; }
+
+    /* Top Summary Ribbon */
+    .summary-ribbon {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .ribbon-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .ribbon-card:hover { border-color: var(--border-bright); transform: translateY(-1px); }
+
+    .ribbon-label { font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-dim); letter-spacing: 0.05em; }
+    .ribbon-val { font-size: 1.25rem; font-weight: 800; color: #fff; margin-top: 2px; font-family: var(--font-mono); }
+    .ribbon-tag { font-size: 0.7rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; background: var(--surface-elevated); color: var(--accent); }
 
     /* Live Judge Decision Banner */
     .verdict-banner {
-      border-radius: var(--radius);
-      padding: 18px 24px;
-      margin-bottom: 20px;
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      transition: all 0.3s ease;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       overflow: hidden;
     }
 
     .verdict-banner.accepted {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(12, 18, 25, 0.95) 100%);
       border: 2px solid var(--success);
-      box-shadow: 0 0 25px var(--accent-glow);
+      box-shadow: 0 0 35px var(--accent-glow);
     }
 
     .verdict-banner.rejected {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%);
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.18) 0%, rgba(12, 18, 25, 0.95) 100%);
       border: 2px solid var(--danger);
-      box-shadow: 0 0 25px var(--danger-glow);
+      box-shadow: 0 0 35px var(--danger-glow);
     }
 
     .verdict-banner.loaded {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.14) 0%, rgba(12, 18, 25, 0.95) 100%);
       border: 2px solid var(--info);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+      box-shadow: 0 0 30px var(--info-glow);
     }
 
     .verdict-top {
@@ -131,30 +220,29 @@
     }
 
     .verdict-tag {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 6px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
     }
-
-    .verdict-tag.accepted { background: var(--success); color: #000; }
-    .verdict-tag.rejected { background: var(--danger); color: #fff; }
-    .verdict-tag.loaded { background: var(--info); color: #000; }
+    .verdict-tag.accepted { background: var(--success); color: #000; box-shadow: 0 0 12px var(--accent); }
+    .verdict-tag.rejected { background: var(--danger); color: #fff; box-shadow: 0 0 12px var(--danger); }
+    .verdict-tag.loaded { background: var(--info); color: #000; box-shadow: 0 0 12px var(--info); }
 
     .verdict-headline {
-      font-size: 1.05rem;
-      font-weight: 700;
+      font-size: 1.15rem;
+      font-weight: 800;
       color: #fff;
       letter-spacing: -0.01em;
     }
 
     .verdict-details {
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       color: #cbd5e1;
       line-height: 1.5;
     }
@@ -163,18 +251,21 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     .v-pill {
       font-size: 0.72rem;
       font-weight: 700;
       font-family: var(--font-mono);
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     /* Invariant Check Matrix Bar */
@@ -182,8 +273,8 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 12px 18px;
-      margin-bottom: 20px;
+      padding: 14px 20px;
+      margin-bottom: 24px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -192,11 +283,14 @@
     }
 
     .invariants-title {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 800;
       text-transform: uppercase;
-      color: var(--text-muted);
-      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .invariants-grid {
@@ -210,22 +304,22 @@
       align-items: center;
       gap: 6px;
       font-size: 0.75rem;
-      font-weight: 600;
-      padding: 4px 10px;
+      font-weight: 700;
+      padding: 5px 12px;
       border-radius: 6px;
-      background: var(--surface-2);
+      background: var(--surface-elevated);
       border: 1px solid var(--border);
     }
-    .check-item.pass { color: var(--success); border-color: rgba(16, 185, 129, 0.4); }
+    .check-item.pass { color: var(--success); border-color: rgba(16, 185, 129, 0.4); background: var(--accent-dim); }
 
-    /* App 3-Column Layout */
+    /* Layout Grid */
     .app-grid {
       display: grid;
-      grid-template-columns: 310px 1fr 340px;
-      gap: 20px;
+      grid-template-columns: 320px 1fr 340px;
+      gap: 22px;
     }
 
-    @media (max-width: 1300px) {
+    @media (max-width: 1350px) {
       .app-grid { grid-template-columns: 1fr; }
     }
 
@@ -234,18 +328,19 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      padding: 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: relative;
     }
 
     .card h3 {
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--accent);
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -254,52 +349,52 @@
     /* Forms & Buttons */
     textarea, select, input {
       width: 100%;
-      background: var(--surface-2);
+      background: var(--surface-elevated);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 10px 12px;
-      border-radius: 8px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
       font-size: 0.85rem;
       font-family: inherit;
       margin-bottom: 10px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     }
-    textarea:focus, select:focus, input:focus { border-color: var(--accent); }
+    textarea:focus, select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-dim); }
 
     button {
       background: var(--accent);
       color: #000;
       font-weight: 700;
       border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
+      padding: 11px 18px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
       font-size: 0.85rem;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
     }
-    button:hover { opacity: 0.9; transform: translateY(-1px); }
-    button.btn-sec { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
-    button.btn-sec:hover { background: var(--surface-3); border-color: var(--border-bright); }
+    button:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 4px 14px var(--accent-glow); }
+    button.btn-sec { background: var(--surface-elevated); color: var(--text); border: 1px solid var(--border); }
+    button.btn-sec:hover { background: var(--surface-hover); border-color: var(--border-bright); box-shadow: none; }
 
     .preset-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 12px;
     }
 
     .preset-btn {
-      background: var(--surface-2);
+      background: var(--surface-elevated);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.76rem;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
       text-align: left;
       cursor: pointer;
       transition: all 0.2s;
@@ -307,109 +402,162 @@
       flex-direction: column;
       gap: 2px;
     }
-    .preset-btn:hover { background: var(--surface-3); border-color: var(--accent); transform: translateX(2px); }
-    .preset-btn strong { color: #fff; font-size: 0.8rem; }
+    .preset-btn:hover { background: var(--surface-hover); border-color: var(--accent); transform: translateX(3px); }
+    .preset-btn strong { color: #fff; font-size: 0.82rem; }
     .preset-btn span { color: var(--text-muted); font-size: 0.72rem; }
 
     /* Key-Value Tables */
-    .kv-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    .kv-table td { padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .kv-table td:first-child { color: var(--text-muted); width: 42%; }
-    .kv-table td:last-child { font-weight: 600; text-align: right; }
+    .kv-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    .kv-table td { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .kv-table td:first-child { color: var(--text-muted); width: 44%; }
+    .kv-table td:last-child { font-weight: 600; text-align: right; color: #fff; }
 
     /* Timeline */
     .timeline-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 9px 12px;
-      background: var(--surface-2);
-      border-radius: 6px;
-      margin-bottom: 6px;
-      font-size: 0.8rem;
+      padding: 10px 14px;
+      background: var(--surface-elevated);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      font-size: 0.82rem;
+      border: 1px solid transparent;
+      transition: all 0.2s;
     }
-    .timeline-item.mandatory { border-left: 3px solid var(--accent); }
-    .timeline-time { font-family: var(--font-mono); font-weight: 700; color: var(--accent); margin-right: 10px; }
+    .timeline-item:hover { border-color: var(--border); }
+    .timeline-item.mandatory { border-left: 4px solid var(--warning); background: rgba(245, 158, 11, 0.08); }
+    .timeline-time { font-family: var(--font-mono); font-weight: 700; color: var(--accent); margin-right: 12px; }
 
     /* Stacked Bar */
     .bar-container {
-      height: 14px;
-      background: var(--surface-2);
+      height: 16px;
+      background: var(--surface-elevated);
       border-radius: 999px;
       overflow: hidden;
       display: flex;
       margin: 12px 0 6px 0;
+      border: 1px solid var(--border);
     }
-    .bar-segment { height: 100%; transition: width 0.4s ease; }
+    .bar-segment { height: 100%; transition: width 0.5s ease; }
 
     /* Messages Audit */
     .msg-item {
-      padding: 10px 12px;
-      background: var(--surface-2);
-      border-radius: 8px;
+      padding: 12px 14px;
+      background: var(--surface-elevated);
+      border-radius: var(--radius-sm);
       margin-bottom: 8px;
       font-size: 0.8rem;
       border: 1px solid transparent;
+      transition: all 0.2s;
     }
-    .msg-item:hover { border-color: var(--border); }
-    .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .msg-item:hover { border-color: var(--border-bright); background: var(--surface-hover); }
+    .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .msg-sender { font-weight: 700; color: #fff; }
-    .status-tag { padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+    .status-tag { padding: 3px 8px; border-radius: 4px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
     .status-used, .status-accepted { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-    .status-rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-    .status-ignored { background: rgba(139, 155, 170, 0.2); color: var(--text-muted); }
+    .status-rejected { background: rgba(244, 63, 94, 0.2); color: var(--danger); }
+    .status-ignored { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
     .status-notapproved { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-    .status-superseded { background: rgba(139, 155, 170, 0.2); color: var(--text-muted); text-decoration: line-through; }
+    .status-superseded { background: rgba(148, 163, 184, 0.15); color: var(--text-dim); text-decoration: line-through; }
 
     /* Trace Section */
     .trace-card pre {
-      background: #05080a;
+      background: #040608;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
+      border-radius: var(--radius-sm);
+      padding: 16px;
       font-family: var(--font-mono);
       font-size: 0.78rem;
-      color: #7ee787;
+      color: #38bdf8;
       overflow-x: auto;
       max-height: 420px;
       white-space: pre-wrap;
-      line-height: 1.45;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Bar -->
+  <!-- Top Navigation Bar -->
   <header>
-    <div>
-      <div class="brand-title">
-        <span class="pulse-dot"></span>
-        <span>Mind to Machine — Autonomous Hackathon Planner</span>
-        <span id="badgeValid" class="badge badge-valid">VALID</span>
-      </div>
-      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-        4-Hour Physical Hackathon Solver • Islamabad • Headcount: <strong>177</strong> (150 Students + 10 Staff + 17 Judges)
+    <div class="brand-wrap">
+      <div class="brand-logo">M2M</div>
+      <div>
+        <div class="brand-title">
+          <span>Mind to Machine — Autonomous Event Planner</span>
+          <span id="badgeValid" class="badge-status badge-valid">VALID (6/6 INVARIANTS)</span>
+        </div>
+        <div class="brand-sub">
+          <span class="pulse-dot"></span>
+          <span>4-Hour Physical Hackathon Solver • Islamabad</span>
+          <span>•</span>
+          <span style="color:var(--accent);">Headcount: <strong>177</strong> (150 Students + 10 Staff + 17 Judges)</span>
+        </div>
       </div>
     </div>
 
-    <div class="status-chips">
-      <div class="badge-chip">Calls: <strong id="chipCalls" style="color:var(--text)">0</strong></div>
-      <div class="badge-chip">Total Tokens: <strong id="chipTokens" style="color:var(--accent)">0</strong></div>
-      <div class="badge-chip">Model: <strong id="chipModel" style="color:var(--text)">gemini-3.5-flash-lite</strong></div>
-      <button id="btnSoundToggle" class="btn-sec" style="font-size: 0.75rem; padding: 5px 10px;" onclick="toggleSound()">
+    <div class="header-metrics">
+      <div class="metric-pill">Calls: <strong id="chipCalls">0</strong></div>
+      <div class="metric-pill">Tokens: <strong id="chipTokens" style="color:var(--accent)">0</strong></div>
+      <div class="metric-pill">Model: <strong id="chipModel">gemini-3.5-flash-lite</strong></div>
+      <button id="btnSoundToggle" class="btn-sec" style="font-size: 0.75rem; padding: 6px 12px;" onclick="toggleSound()">
         🔊 Sound: ON
       </button>
       <a href="/api/download-report" download="final_report.txt">
-        <button class="btn-sec" style="font-size: 0.75rem; padding: 5px 12px;">Download Report</button>
+        <button class="btn-sec" style="font-size: 0.75rem; padding: 6px 14px;">📥 Export Report</button>
       </a>
     </div>
   </header>
+
+  <!-- Top Key Metrics Ribbon -->
+  <div class="summary-ribbon">
+    <div class="ribbon-card">
+      <div>
+        <div class="ribbon-label">Total Attendees</div>
+        <div class="ribbon-val" id="rbHeadcount">177</div>
+      </div>
+      <div class="ribbon-tag">150s + 10st + 17j</div>
+    </div>
+
+    <div class="ribbon-card">
+      <div>
+        <div class="ribbon-label">Budget Allocated</div>
+        <div class="ribbon-val" id="rbAllocated" style="color:var(--accent);">Rs 547,400</div>
+      </div>
+      <div class="ribbon-tag" id="rbCap">Cap: Rs 650,000</div>
+    </div>
+
+    <div class="ribbon-card">
+      <div>
+        <div class="ribbon-label">Safety Buffer</div>
+        <div class="ribbon-val" id="rbBuffer" style="color:var(--success);">Rs 102,600</div>
+      </div>
+      <div class="ribbon-tag">Under Cap</div>
+    </div>
+
+    <div class="ribbon-card">
+      <div>
+        <div class="ribbon-label">Active Venue</div>
+        <div class="ribbon-val" id="rbVenue">Hall A</div>
+      </div>
+      <div class="ribbon-tag">200 Seats • Generator</div>
+    </div>
+
+    <div class="ribbon-card">
+      <div>
+        <div class="ribbon-label">Judging Ratio</div>
+        <div class="ribbon-val" id="rbJudging">17 Judges</div>
+      </div>
+      <div class="ribbon-tag">50 Teams • 3:1</div>
+    </div>
+  </div>
 
   <!-- Live Judge Decision Banner -->
   <div id="verdictBanner" class="verdict-banner loaded">
     <div class="verdict-top">
       <span id="verdictTag" class="verdict-tag loaded">📦 PACK LOADED</span>
-      <span id="verdictTime" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">Ready</span>
+      <span id="verdictTime" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">Ready</span>
     </div>
     <div id="verdictHeadline" class="verdict-headline">
       Planner Ready • Autonomous Invariant Enforcement Active
@@ -419,14 +567,14 @@
     </div>
     <div class="verdict-badges" id="verdictBadges">
       <span class="v-pill">INVARIANTS: 6/6 PASS</span>
-      <span class="v-pill">ARCHITECTURE: HYBRID LLM+CODE</span>
-      <span class="v-pill">MATH DRIFT: 0%</span>
+      <span class="v-pill">ARCHITECTURE: HYBRID LLM + DETERMINISTIC CODE</span>
+      <span class="v-pill">ARITHMETIC DRIFT: 0%</span>
     </div>
   </div>
 
   <!-- Invariant Checks Matrix Bar -->
   <div class="invariants-bar">
-    <div class="invariants-title">Official Invariant Verification Suite (Rule 10):</div>
+    <div class="invariants-title">🛡️ Official Invariant Verification Suite (Rule 10):</div>
     <div class="invariants-grid">
       <div class="check-item pass">✓ Figures Match (177 Headcount)</div>
       <div class="check-item pass">✓ Budget Cap (≤ Rs 650,000)</div>
@@ -441,68 +589,71 @@
     <!-- Left Column: Actions & Judge Preset Triggers -->
     <div>
       <div class="card">
-        <h3>Inject Message (Rules 4 & 5)</h3>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-          Simulate judges testing real-time changes or adversarial inputs.
+        <h3>⚡ Real-Time Message Injector</h3>
+        <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 10px;">
+          Simulate judges testing dynamic changes, unexpected rules, or adversarial attacks.
         </p>
-        <textarea id="msgInput" rows="3" placeholder="Type or click a preset below..."></textarea>
-        <button id="btnSendMsg" style="width: 100%;">⚡ Evaluate Message</button>
+        <textarea id="msgInput" rows="3" placeholder="Type custom message or click a judge preset below..."></textarea>
+        <button id="btnSendMsg" style="width: 100%;">Evaluate Message Instantly</button>
 
-        <div style="margin-top: 14px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
-          One-Click Judge Presets:
+        <div style="margin-top: 16px; font-size: 0.72rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">
+          One-Click Judge Test Presets:
         </div>
 
         <div class="preset-group">
           <button class="preset-btn" onclick="injectPreset('Practice 1')">
-            <strong style="color:var(--success);">🟢 Practice 1: Printing +5k</strong>
-            <span>Finance: bill came in at Rs 15,000 (Expected: ACCEPT)</span>
+            <strong style="color:var(--success);">🟢 Practice 1: Printing +5k (Accepted)</strong>
+            <span>Finance: Printing bill came in at Rs 15,000 (Adjusts budget in &lt;1s)</span>
           </button>
 
           <button class="preset-btn" onclick="injectPreset('Practice 2')">
-            <strong style="color:var(--danger);">🔴 Practice 2: Caterer 100 Boxes</strong>
-            <span>Caterer rounds down to 100 boxes (Expected: REJECT 100 &lt; 177)</span>
+            <strong style="color:var(--danger);">🔴 Practice 2: Caterer 100 Boxes (Rejected)</strong>
+            <span>Caterer cuts food to 100 (Rejection: 100 &lt; 177 headcount)</span>
           </button>
 
           <button class="preset-btn" onclick="injectPreset('Adv 1')">
-            <strong style="color:var(--danger);">🔴 Adv 1: 10x Price Typo</strong>
-            <span>Hall A surge price Rs 1,800,000 (Expected: REJECT Budget Exceeded)</span>
+            <strong style="color:var(--danger);">🔴 Adv 1: 10x Price Typo (Rejected)</strong>
+            <span>Surge price Rs 1,800,000 (Rejection: Budget exceeded)</span>
           </button>
 
           <button class="preset-btn" onclick="injectPreset('Adv 2')">
-            <strong style="color:var(--danger);">🔴 Adv 2: Missing Generator</strong>
-            <span>Hall C without backup generator (Expected: REJECT Rule Violation)</span>
+            <strong style="color:var(--danger);">🔴 Adv 2: Missing Generator (Rejected)</strong>
+            <span>Hall C without backup generator (Rejection: Rule violation)</span>
           </button>
 
           <button class="preset-btn" onclick="injectPreset('Adv 3')">
-            <strong style="color:var(--danger);">🔴 Adv 3: Judge Shortage</strong>
-            <span>Team size 2 =&gt; 75 teams (Expected: REJECT 25 judges &gt; 20 avail)</span>
+            <strong style="color:var(--danger);">🔴 Adv 3: Judge Shortage (Rejected)</strong>
+            <span>Team size 2 =&gt; 75 teams (Rejection: 25 needed &gt; 20 available)</span>
           </button>
         </div>
       </div>
 
       <div class="card">
         <h3>Switch Pack (6 Variants)</h3>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+          Load test packs across different cities and scenarios.
+        </p>
         <select id="packSelect"></select>
         <button id="btnRunPack" class="btn-sec" style="width: 100%;">Load Pack</button>
       </div>
     </div>
 
-    <!-- Center Column: The 5 Areas -->
+    <!-- Center Column: The 5 Core Event Areas -->
     <div>
       <!-- 1. Venue -->
       <div class="card">
-        <h3>1. Venue Area <span id="vCapacity" style="color:var(--text); font-size: 0.8rem;"></span></h3>
+        <h3>1. Venue Area <span id="vCapacity" style="color:var(--text); font-size: 0.8rem; font-family: var(--font-mono);"></span></h3>
         <table class="kv-table">
           <tr><td>Selected Hall</td><td id="vHall">-</td></tr>
           <tr><td>Rental Cost</td><td id="vCost">-</td></tr>
           <tr><td>Features</td><td id="vFeatures">-</td></tr>
-          <tr><td>Decision Why</td><td id="vWhy" style="font-size: 0.75rem; color: var(--text-muted);">-</td></tr>
+          <tr><td>Decision Justification</td><td id="vWhy" style="font-size: 0.75rem; color: var(--text-muted);">-</td></tr>
         </table>
       </div>
 
       <!-- 2. Food -->
       <div class="card">
-        <h3>2. Food Area <span id="fHeadcount" style="color:var(--text); font-size: 0.8rem;"></span></h3>
+        <h3>2. Food Area <span id="fHeadcount" style="color:var(--text); font-size: 0.8rem; font-family: var(--font-mono);"></span></h3>
         <table class="kv-table">
           <tr><td>Selected Tier</td><td id="fTier">-</td></tr>
           <tr><td>Boxes Ordered</td><td id="fQty">-</td></tr>
@@ -518,7 +669,7 @@
           <tr><td>Teams to Judge</td><td id="jTeams">-</td></tr>
           <tr><td>Judges Required / Assigned</td><td id="jAssigned">-</td></tr>
           <tr><td>Honorarium (Rs 5,000 each)</td><td id="jCost" style="color: var(--accent);">-</td></tr>
-          <tr><td>Parallel Rounds</td><td id="jRounds">-</td></tr>
+          <tr><td>Parallel Evaluation Rounds</td><td id="jRounds">-</td></tr>
         </table>
       </div>
 
@@ -531,9 +682,9 @@
         </div>
         <div class="bar-container">
           <div id="barSpent" class="bar-segment" style="background: var(--accent); width: 84%;"></div>
-          <div id="barBuffer" class="bar-segment" style="background: var(--surface-3); width: 16%;"></div>
+          <div id="barBuffer" class="bar-segment" style="background: var(--surface-hover); width: 16%;"></div>
         </div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); text-align: right; margin-bottom: 10px;">
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-align: right; margin-bottom: 12px;">
           Safety Buffer: <strong id="bBuffer" style="color: var(--success);">-</strong>
         </div>
         <table class="kv-table" id="bBreakdown"></table>
@@ -546,14 +697,14 @@
       </div>
     </div>
 
-    <!-- Right Column: Messages Audit -->
+    <!-- Right Column: Messages Provenance Ledger -->
     <div>
       <div class="card">
-        <h3>Messages Provenance Ledger</h3>
+        <h3>Provenance Audit Ledger</h3>
         <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-          Real-time message state: USED, REJECTED, SUPERSEDED, IGNORED.
+          State track: USED, REJECTED, SUPERSEDED, NOT APPROVED.
         </p>
-        <div id="messagesList" style="max-height: 620px; overflow-y: auto;"></div>
+        <div id="messagesList" style="max-height: 640px; overflow-y: auto;"></div>
       </div>
     </div>
   </div>
@@ -577,13 +728,12 @@
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (isAccepted) {
-          // Cheerful high dual chime
           const osc1 = audioCtx.createOscillator();
           const osc2 = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc1.type = 'sine'; osc2.type = 'sine';
-          osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
-          osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.1); // A5
+          osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+          osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.1);
           gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
           osc1.connect(gain); osc2.connect(gain);
@@ -591,7 +741,6 @@
           osc1.start(); osc2.start(audioCtx.currentTime + 0.1);
           osc1.stop(audioCtx.currentTime + 0.35); osc2.stop(audioCtx.currentTime + 0.35);
         } else {
-          // Low alert warning pulse
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc.type = 'sawtooth';
@@ -602,9 +751,7 @@
           osc.connect(gain); gain.connect(audioCtx.destination);
           osc.start(); osc.stop(audioCtx.currentTime + 0.28);
         }
-      } catch (e) {
-        // AudioContext not allowed or unsupported
-      }
+      } catch (e) {}
     }
 
     const PRESETS = {
@@ -655,7 +802,7 @@
           badges.innerHTML = `
             <span class="v-pill">AFFECTED AREAS: [${(verdict.affectedAreas || []).join(', ').toUpperCase() || 'NONE'}]</span>
             <span class="v-pill">INVARIANTS: 6/6 PASS</span>
-            <span class="v-pill">LATENCY: &lt; 1s</span>
+            <span class="v-pill">SPEED: &lt; 1s</span>
           `;
         } else if (verdict.status === 'REJECTED') {
           tag.textContent = '🚫 CONFLICT DETECTED & REJECTED';
@@ -680,12 +827,19 @@
 
       if (!plan || plan.status !== "VALID") {
         document.getElementById('badgeValid').textContent = "INVALID";
-        document.getElementById('badgeValid').className = "badge badge-invalid";
+        document.getElementById('badgeValid').className = "badge-status badge-invalid";
         return;
       }
 
-      document.getElementById('badgeValid').textContent = "VALID";
-      document.getElementById('badgeValid').className = "badge badge-valid";
+      document.getElementById('badgeValid').textContent = "VALID (6/6 INVARIANTS)";
+      document.getElementById('badgeValid').className = "badge-status badge-valid";
+
+      // Summary Ribbon
+      document.getElementById('rbHeadcount').textContent = plan.meta.headcount;
+      document.getElementById('rbAllocated').textContent = `Rs ${plan.budget.totalCost.toLocaleString()}`;
+      document.getElementById('rbBuffer').textContent = `Rs ${plan.budget.remainingBuffer.toLocaleString()}`;
+      document.getElementById('rbVenue').textContent = plan.venue.chosen.name;
+      document.getElementById('rbJudging').textContent = `${plan.judging.used} Judges (${plan.meta.teams} Teams)`;
 
       // 1. Venue
       document.getElementById('vHall').textContent = plan.venue.chosen.name;
@@ -733,9 +887,9 @@
           <div class="timeline-item ${b.isMandatory ? 'mandatory' : ''}">
             <div>
               <span class="timeline-time">${b.start}</span>
-              <span>${b.name}</span>
+              <span style="font-weight:600;">${b.name}</span>
             </div>
-            <span style="font-family: var(--font-mono); color: var(--text-muted);">${b.duration} min</span>
+            <span style="font-family: var(--font-mono); color: var(--text-dim);">${b.duration} min</span>
           </div>
         `;
       }
@@ -793,7 +947,7 @@
         document.getElementById('msgInput').value = '';
         await loadData();
       } finally {
-        document.getElementById('btnSendMsg').textContent = '⚡ Evaluate Message';
+        document.getElementById('btnSendMsg').textContent = 'Evaluate Message Instantly';
       }
     });
 
