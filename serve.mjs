@@ -55,6 +55,7 @@ const server = http.createServer(async (req, res) => {
     const plan = readJsonSafe(path.join(OUT_DIR, "plan.json"));
     const traceText = readTextSafe(path.join(OUT_DIR, "trace.txt"));
     const reportText = readTextSafe(path.join(OUT_DIR, "final_report.txt"));
+    const verdict = readJsonSafe(path.join(OUT_DIR, "verdict.json"));
     const state = readJsonSafe(path.resolve(process.cwd(), "state", "state.json"));
     const packFiles = fs.existsSync(PACKS_DIR) ? fs.readdirSync(PACKS_DIR).filter(f => f.endsWith(".txt")) : [];
 
@@ -63,6 +64,7 @@ const server = http.createServer(async (req, res) => {
       plan,
       traceText,
       reportText,
+      verdict,
       messages: state?.messages || [],
       packFiles,
     }));
@@ -89,10 +91,11 @@ const server = http.createServer(async (req, res) => {
 
         const plan = readJsonSafe(path.join(OUT_DIR, "plan.json"));
         const traceText = readTextSafe(path.join(OUT_DIR, "trace.txt"));
+        const verdict = readJsonSafe(path.join(OUT_DIR, "verdict.json"));
         const state = readJsonSafe(path.resolve(process.cwd(), "state", "state.json"));
 
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ success: true, plan, traceText, messages: state?.messages || [] }));
+        res.end(JSON.stringify({ success: true, verdict, plan, traceText, messages: state?.messages || [] }));
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: err.message }));
@@ -113,10 +116,11 @@ const server = http.createServer(async (req, res) => {
 
         const plan = readJsonSafe(path.join(OUT_DIR, "plan.json"));
         const traceText = readTextSafe(path.join(OUT_DIR, "trace.txt"));
+        const verdict = readJsonSafe(path.join(OUT_DIR, "verdict.json"));
         const state = readJsonSafe(path.resolve(process.cwd(), "state", "state.json"));
 
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ success: true, plan, traceText, messages: state?.messages || [] }));
+        res.end(JSON.stringify({ success: true, verdict, plan, traceText, messages: state?.messages || [] }));
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: err.message }));

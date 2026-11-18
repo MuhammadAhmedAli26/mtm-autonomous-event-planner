@@ -60,12 +60,15 @@ function saveState(ledger, plan, processedHashes) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(stateData, null, 2), "utf-8");
 }
 
-function saveOutputs(planText, traceText, msgTableText, planObj) {
+function saveOutputs(planText, traceText, msgTableText, planObj, verdictObj) {
   ensureDirs();
   const fullReport = `${planText}\n\n${traceText}\n\n${msgTableText}\n`;
   fs.writeFileSync(path.join(OUT_DIR, "plan.json"), JSON.stringify(planObj, null, 2), "utf-8");
   fs.writeFileSync(path.join(OUT_DIR, "trace.txt"), traceText, "utf-8");
   fs.writeFileSync(path.join(OUT_DIR, "final_report.txt"), fullReport, "utf-8");
+  if (verdictObj) {
+    fs.writeFileSync(path.join(OUT_DIR, "verdict.json"), JSON.stringify(verdictObj, null, 2), "utf-8");
+  }
 
   // Historical run archive
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -120,6 +123,8 @@ async function main() {
   let currentPlan;
   let processedHashes;
 
+  let lastVerdict = null;
+
   if (isUpdateMode) {
     ledger = existingState.ledger;
     currentPlan = existingState.plan;
@@ -128,6 +133,19 @@ async function main() {
     for (const msg of incomingMessages) {
       const res = applyMessageUpdate(ledger, currentPlan, msg, processedHashes);
       currentPlan = res.plan;
+      const autoReason = res.accepted
+        ? `Plan updated successfully. Affected areas: [${(res.affectedAreas || []).join(", ").toUpperCase() || "NONE"}]. Current budget: Rs ${currentPlan.budget?.totalCost?.toLocaleString()} (Buffer: Rs ${currentPlan.budget?.remainingBuffer?.toLocaleString()}).`
+        : (res.reason || "Conflict detected with constraints.");
+
+      lastVerdict = {
+        accepted: res.accepted,
+        status: res.accepted ? "ACCEPTED" : "REJECTED",
+        reason: res.reason || autoReason,
+        affectedAreas: res.affectedAreas || [],
+        sender: msg.sender || "Unknown",
+        rawText: msg.rawText || "",
+        evaluatedAt: new Date().toISOString(),
+      };
     }
   } else {
     // Fresh New Pack
@@ -140,9 +158,20 @@ async function main() {
     }
 
     currentPlan = planEvent(ledger.getActiveClaims());
+    lastVerdict = {
+      accepted: true,
+      status: "PACK_LOADED",
+      reason: `Full initial pack loaded with ${incomingMessages.length} messages.`,
+      affectedAreas: ["venue", "food", "judging", "schedule", "budget"],
+      evaluatedAt: new Date().toISOString(),
+    };
   }
 
   const sixChecks = runSixChecks(currentPlan, ledger);
+  if (lastVerdict) {
+    lastVerdict.checksPassed = sixChecks.allPassed;
+    lastVerdict.checksSummary = sixChecks.summary;
+  }
   saveState(ledger, currentPlan, processedHashes);
 
   // Formatting
@@ -150,7 +179,7 @@ async function main() {
   const traceText = trace.formatTraceText();
   const msgTableText = renderMessageTable(ledger.messages);
 
-  saveOutputs(planText, traceText, msgTableText, currentPlan);
+  saveOutputs(planText, traceText, msgTableText, currentPlan, lastVerdict);
 
   // Print in official required order: PLAN, then TRACE, then MESSAGE TABLE
   console.log(planText);
