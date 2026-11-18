@@ -1409,9 +1409,46 @@
         }
       }
 
+      // Always populate Packs dropdown, Trace, and Messages Audit regardless of plan status!
+      const sel = document.getElementById('packSelect');
+      if (sel && sel.children.length === 0) {
+        for (const f of data.packFiles || []) {
+          sel.innerHTML += '<option value="' + f + '">' + f + '</option>';
+        }
+      }
+
+      if (data.traceText) {
+        document.getElementById('traceBox').textContent = data.traceText;
+        const callsMatch = data.traceText.match(/MODEL CALLS: (\d+)/);
+        const tokensMatch = data.traceText.match(/TOTAL TOKENS: (\d+)/);
+        const modelsMatch = data.traceText.match(/MODELS: ([^\r\n]+)/);
+        if (callsMatch) document.getElementById('chipCalls').textContent = callsMatch[1];
+        if (tokensMatch) document.getElementById('chipTokens').textContent = tokensMatch[1];
+        if (modelsMatch) document.getElementById('chipModel').textContent = modelsMatch[1];
+      }
+
+      const ml = document.getElementById('messagesList');
+      if (ml && data.messages) {
+        ml.innerHTML = '';
+        for (const m of data.messages || []) {
+          const statusClass = 'status-' + (m.finalStatus || 'used').toLowerCase().replace(/\s+/g, '');
+          ml.innerHTML += '<div class="msg-item">' +
+            '<div class="msg-header">' +
+              '<span class="msg-sender">' + (m.sender || 'Unknown') + '</span>' +
+              '<span class="status-tag ' + statusClass + '">' + m.finalStatus + '</span>' +
+            '</div>' +
+            '<div style="color: var(--text-muted); font-size:0.78rem;">' + (m.rejectionReason || m.why || m.rawText.slice(0, 85) + '...') + '</div>' +
+          '</div>';
+        }
+      }
+
       if (!plan || plan.status !== "VALID") {
-        document.getElementById('badgeValid').textContent = "INVALID";
+        document.getElementById('badgeValid').textContent = plan && plan.status === 'UNSAT' ? 'UNSAT (CONFLICT)' : 'INVALID';
         document.getElementById('badgeValid').className = "badge-status badge-invalid";
+        if (plan && plan.reason) {
+          document.getElementById('verdictHeadline').textContent = 'Plan Status: ' + plan.status;
+          document.getElementById('verdictDetails').textContent = plan.reason;
+        }
         return;
       }
 
