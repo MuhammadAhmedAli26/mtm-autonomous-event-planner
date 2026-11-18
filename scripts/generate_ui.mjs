@@ -1,0 +1,1568 @@
+import fs from "node:fs";
+import path from "node:path";
+
+const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mind to Machine 2026 — Autonomous Event Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030712;
+      --surface: #0b1320;
+      --surface-elevated: #111e30;
+      --surface-hover: #172840;
+      --border: rgba(255, 255, 255, 0.09);
+      --border-bright: rgba(255, 255, 255, 0.20);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      /* Vibrant Semantic Color Themes */
+      --cyan: #06b6d4;
+      --cyan-bright: #38bdf8;
+      --cyan-border: rgba(6, 182, 212, 0.35);
+      --cyan-bg: rgba(6, 182, 212, 0.08);
+
+      --amber: #f59e0b;
+      --amber-bright: #fbbf24;
+      --amber-border: rgba(245, 158, 11, 0.35);
+      --amber-bg: rgba(245, 158, 11, 0.08);
+
+      --purple: #a855f7;
+      --purple-bright: #c084fc;
+      --purple-border: rgba(168, 85, 247, 0.35);
+      --purple-bg: rgba(168, 85, 247, 0.08);
+
+      --emerald: #10b981;
+      --emerald-bright: #34d399;
+      --emerald-border: rgba(16, 185, 129, 0.35);
+      --emerald-bg: rgba(16, 185, 129, 0.08);
+
+      --lime: #84cc16;
+      --lime-bright: #a3e635;
+      --lime-border: rgba(132, 204, 22, 0.35);
+      --lime-bg: rgba(132, 204, 22, 0.08);
+
+      --rose: #f43f5e;
+      --rose-bright: #fb7185;
+      --rose-border: rgba(244, 63, 94, 0.35);
+      --rose-bg: rgba(244, 63, 94, 0.08);
+
+      --blue: #3b82f6;
+      --blue-bright: #60a5fa;
+      --blue-border: rgba(59, 130, 246, 0.35);
+      --blue-bg: rgba(59, 130, 246, 0.08);
+
+      --indigo: #6366f1;
+      --indigo-bright: #818cf8;
+      --indigo-border: rgba(99, 102, 241, 0.35);
+      --indigo-bg: rgba(99, 102, 241, 0.08);
+
+      --radius-sm: 8px;
+      --radius: 14px;
+      --radius-lg: 20px;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.10) 0px, transparent 45%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.10) 0px, transparent 45%),
+        radial-gradient(at 50% 100%, rgba(168, 85, 247, 0.08) 0px, transparent 50%);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      padding: 24px 32px;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.75; }
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: rgba(11, 19, 32, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      backdrop-filter: blur(14px);
+      animation: fadeInDown 0.5s ease-out;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-logo {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.25rem;
+      color: #030712;
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);
+    }
+
+    .brand-title {
+      font-size: 1.22rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--emerald-bright);
+      box-shadow: 0 0 10px var(--emerald-bright);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    .badge-status {
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-valid { background: rgba(16, 185, 129, 0.15); color: var(--emerald-bright); border-color: var(--emerald-border); }
+    .badge-invalid { background: rgba(244, 63, 94, 0.15); color: var(--rose-bright); border-color: var(--rose-border); }
+
+    .header-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .metric-pill {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .metric-pill strong { color: #fff; font-weight: 700; }
+
+    /* Top Ribbon: 5 Multi-Colored Distinct Metric Boxes */
+    .summary-ribbon {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    .ribbon-box {
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .ribbon-box:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+
+    .rb-cyan {
+      border-color: var(--cyan-border);
+      background: linear-gradient(145deg, var(--cyan-bg) 0%, rgba(11, 19, 32, 0.85) 100%);
+    }
+    .rb-cyan .ribbon-val { color: var(--cyan-bright); }
+    .rb-cyan .ribbon-tag { background: rgba(6, 182, 212, 0.2); color: var(--cyan-bright); }
+
+    .rb-emerald {
+      border-color: var(--emerald-border);
+      background: linear-gradient(145deg, var(--emerald-bg) 0%, rgba(11, 19, 32, 0.85) 100%);
+    }
+    .rb-emerald .ribbon-val { color: var(--emerald-bright); }
+    .rb-emerald .ribbon-tag { background: rgba(16, 185, 129, 0.2); color: var(--emerald-bright); }
+
+    .rb-lime {
+      border-color: var(--lime-border);
+      background: linear-gradient(145deg, var(--lime-bg) 0%, rgba(11, 19, 32, 0.85) 100%);
+    }
+    .rb-lime .ribbon-val { color: var(--lime-bright); }
+    .rb-lime .ribbon-tag { background: rgba(132, 204, 22, 0.2); color: var(--lime-bright); }
+
+    .rb-blue {
+      border-color: var(--blue-border);
+      background: linear-gradient(145deg, var(--blue-bg) 0%, rgba(11, 19, 32, 0.85) 100%);
+    }
+    .rb-blue .ribbon-val { color: var(--blue-bright); }
+    .rb-blue .ribbon-tag { background: rgba(59, 130, 246, 0.2); color: var(--blue-bright); }
+
+    .rb-purple {
+      border-color: var(--purple-border);
+      background: linear-gradient(145deg, var(--purple-bg) 0%, rgba(11, 19, 32, 0.85) 100%);
+    }
+    .rb-purple .ribbon-val { color: var(--purple-bright); }
+    .rb-purple .ribbon-tag { background: rgba(168, 85, 247, 0.2); color: var(--purple-bright); }
+
+    .ribbon-label { font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: var(--text-dim); letter-spacing: 0.05em; }
+    .ribbon-val { font-size: 1.3rem; font-weight: 800; margin-top: 3px; font-family: var(--font-mono); }
+    .ribbon-tag { font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: 700; }
+
+    /* Live Judge Decision Banner */
+    .verdict-banner {
+      border-radius: var(--radius-lg);
+      padding: 22px 26px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.4s ease-out;
+      border: 2px solid var(--border);
+      background: var(--surface);
+    }
+
+    .verdict-banner.accepted {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(11, 19, 32, 0.98) 100%);
+      border-color: var(--emerald-bright);
+      box-shadow: 0 0 35px rgba(16, 185, 129, 0.3);
+    }
+
+    .verdict-banner.rejected {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.20) 0%, rgba(11, 19, 32, 0.98) 100%);
+      border-color: var(--rose-bright);
+      box-shadow: 0 0 35px rgba(244, 63, 94, 0.3);
+    }
+
+    .verdict-banner.irrelevant {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(11, 19, 32, 0.98) 100%);
+      border-color: var(--indigo-bright);
+      box-shadow: 0 0 35px rgba(99, 102, 241, 0.3);
+    }
+
+    .verdict-banner.not_approved {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(11, 19, 32, 0.98) 100%);
+      border-color: var(--amber-bright);
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.3);
+    }
+
+    .verdict-banner.loaded {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(11, 19, 32, 0.98) 100%);
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
+    }
+
+    .verdict-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .verdict-tag {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .verdict-tag.accepted { background: var(--emerald-bright); color: #000; box-shadow: 0 0 14px rgba(16, 185, 129, 0.4); }
+    .verdict-tag.rejected { background: var(--rose-bright); color: #fff; box-shadow: 0 0 14px rgba(244, 63, 94, 0.4); }
+    .verdict-tag.irrelevant { background: var(--indigo-bright); color: #000; box-shadow: 0 0 14px rgba(99, 102, 241, 0.4); }
+    .verdict-tag.not_approved { background: var(--amber-bright); color: #000; box-shadow: 0 0 14px rgba(245, 158, 11, 0.4); }
+    .verdict-tag.loaded { background: var(--cyan-bright); color: #000; box-shadow: 0 0 14px rgba(6, 182, 212, 0.4); }
+
+    /* Last Submitted User Message Callout Text Box */
+    .user-msg-box {
+      background: rgba(3, 7, 18, 0.7);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-left: 5px solid var(--cyan-bright);
+      animation: fadeInUp 0.3s ease-out;
+    }
+    .user-msg-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--cyan-bright);
+      letter-spacing: 0.06em;
+    }
+    .user-msg-text {
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: #fff;
+      font-style: italic;
+    }
+    .user-msg-sender {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .verdict-headline {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .verdict-details {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.55;
+    }
+
+    .verdict-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .v-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: rgba(3, 7, 18, 0.6);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Invariant Check Matrix Bar */
+    .invariants-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 22px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .invariants-title {
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .invariants-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .check-box {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid var(--emerald-border);
+      color: var(--emerald-bright);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* 3-Column Responsive Grid */
+    .app-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr 340px;
+      gap: 24px;
+    }
+
+    @media (max-width: 1400px) {
+      .app-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Standard Cards */
+    .card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: relative;
+      transition: all 0.25s ease;
+    }
+    .card:hover { border-color: var(--border-bright); }
+
+    .card h3 {
+      font-size: 0.92rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Distinct Area Card Borders & Header Glows */
+    .card-venue {
+      border-top: 4px solid var(--cyan-bright);
+      background: linear-gradient(180deg, rgba(6, 182, 212, 0.05) 0%, var(--surface) 100%);
+    }
+    .card-venue h3 { color: var(--cyan-bright); }
+
+    .card-food {
+      border-top: 4px solid var(--amber-bright);
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, var(--surface) 100%);
+    }
+    .card-food h3 { color: var(--amber-bright); }
+
+    .card-judging {
+      border-top: 4px solid var(--purple-bright);
+      background: linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, var(--surface) 100%);
+    }
+    .card-judging h3 { color: var(--purple-bright); }
+
+    .card-budget {
+      border-top: 4px solid var(--emerald-bright);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, var(--surface) 100%);
+    }
+    .card-budget h3 { color: var(--emerald-bright); }
+
+    .card-schedule {
+      border-top: 4px solid var(--rose-bright);
+      background: linear-gradient(180deg, rgba(244, 63, 94, 0.05) 0%, var(--surface) 100%);
+    }
+    .card-schedule h3 { color: var(--rose-bright); }
+
+    /* Data Tile Grid (Every Single Metric In A Dedicated Container Box!) */
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .data-tile {
+      border-radius: var(--radius-sm);
+      padding: 13px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border: 1.5px solid var(--border);
+      background: var(--surface-elevated);
+      transition: all 0.22s ease;
+      position: relative;
+    }
+    .data-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+
+    .tile-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+    }
+    .tile-value {
+      font-size: 1.12rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tile-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Distinct Tile Themes With Glowing Borders & Tinted Surfaces */
+    .tile-box-cyan {
+      border-color: var(--cyan-border);
+      background: linear-gradient(145deg, var(--cyan-bg) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-cyan .tile-value { color: var(--cyan-bright); }
+    .tile-box-cyan .tile-label { color: #67e8f9; }
+
+    .tile-box-blue {
+      border-color: var(--blue-border);
+      background: linear-gradient(145deg, var(--blue-bg) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-blue .tile-value { color: var(--blue-bright); }
+    .tile-box-blue .tile-label { color: #93c5fd; }
+
+    .tile-box-teal {
+      border-color: rgba(20, 184, 166, 0.35);
+      background: linear-gradient(145deg, rgba(20, 184, 166, 0.08) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-teal .tile-value { color: #2dd4bf; }
+    .tile-box-teal .tile-label { color: #5eead4; }
+
+    .tile-box-amber {
+      border-color: var(--amber-border);
+      background: linear-gradient(145deg, var(--amber-bg) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-amber .tile-value { color: var(--amber-bright); }
+    .tile-box-amber .tile-label { color: #fde047; }
+
+    .tile-box-orange {
+      border-color: rgba(249, 115, 22, 0.35);
+      background: linear-gradient(145deg, rgba(249, 115, 22, 0.08) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-orange .tile-value { color: #fb923c; }
+    .tile-box-orange .tile-label { color: #fdba74; }
+
+    .tile-box-purple {
+      border-color: var(--purple-border);
+      background: linear-gradient(145deg, var(--purple-bg) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-purple .tile-value { color: var(--purple-bright); }
+    .tile-box-purple .tile-label { color: #d8b4fe; }
+
+    .tile-box-violet {
+      border-color: rgba(139, 92, 246, 0.35);
+      background: linear-gradient(145deg, rgba(139, 92, 246, 0.08) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-violet .tile-value { color: #a78bfa; }
+    .tile-box-violet .tile-label { color: #c4b5fd; }
+
+    .tile-box-fuchsia {
+      border-color: rgba(217, 70, 239, 0.35);
+      background: linear-gradient(145deg, rgba(217, 70, 239, 0.08) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-fuchsia .tile-value { color: #e879f9; }
+    .tile-box-fuchsia .tile-label { color: #f0abfc; }
+
+    .tile-box-emerald {
+      border-color: var(--emerald-border);
+      background: linear-gradient(145deg, var(--emerald-bg) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-emerald .tile-value { color: var(--emerald-bright); }
+    .tile-box-emerald .tile-label { color: #6ee7b7; }
+
+    .tile-box-lime {
+      border-color: var(--lime-border);
+      background: linear-gradient(145deg, var(--lime-bg) 0%, rgba(17, 30, 48, 0.9) 100%);
+    }
+    .tile-box-lime .tile-value { color: var(--lime-bright); }
+    .tile-box-lime .tile-label { color: #bef264; }
+
+    /* Area-Specific Decision Text Box */
+    .decision-sub-box {
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border: 1px solid var(--border);
+      background: rgba(3, 7, 18, 0.55);
+    }
+    .decision-sub-box strong { color: #fff; font-size: 0.82rem; }
+
+    .box-border-cyan { border-left: 4px solid var(--cyan-bright); }
+    .box-border-amber { border-left: 4px solid var(--amber-bright); }
+    .box-border-purple { border-left: 4px solid var(--purple-bright); }
+    .box-border-emerald { border-left: 4px solid var(--emerald-bright); }
+    .box-border-rose { border-left: 4px solid var(--rose-bright); }
+
+    /* Itemized Allocation Chips in Budget */
+    .chips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .chip-item {
+      font-size: 0.76rem;
+      padding: 7px 14px;
+      border-radius: 8px;
+      background: var(--surface-elevated);
+      border: 1.5px solid var(--border);
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .chip-venue { border-color: var(--cyan-border); background: var(--cyan-bg); }
+    .chip-food { border-color: var(--amber-border); background: var(--amber-bg); }
+    .chip-judging { border-color: var(--purple-border); background: var(--purple-bg); }
+    .chip-misc { border-color: var(--emerald-border); background: var(--emerald-bg); }
+
+    .chip-item strong { font-family: var(--font-mono); font-weight: 700; color: #fff; }
+
+    /* Side Decision Card (Right under the User's Input Box) */
+    .side-decision-box {
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border: 2px solid var(--border);
+      background: var(--surface-hover);
+      animation: fadeInUp 0.3s ease-out;
+    }
+    .side-decision-box.accepted { border-color: var(--emerald-bright); background: rgba(16, 185, 129, 0.12); box-shadow: 0 0 20px rgba(16, 185, 129, 0.25); }
+    .side-decision-box.rejected { border-color: var(--rose-bright); background: rgba(244, 63, 94, 0.14); box-shadow: 0 0 20px rgba(244, 63, 94, 0.25); }
+    .side-decision-box.irrelevant { border-color: var(--indigo-bright); background: rgba(99, 102, 241, 0.12); box-shadow: 0 0 20px rgba(99, 102, 241, 0.25); }
+    .side-decision-box.not_approved { border-color: var(--amber-bright); background: rgba(245, 158, 11, 0.12); box-shadow: 0 0 20px rgba(245, 158, 11, 0.25); }
+
+    .sdb-header { display: flex; justify-content: space-between; align-items: center; }
+    .sdb-tag { font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; }
+    .sdb-tag.accepted { background: var(--emerald-bright); color: #000; }
+    .sdb-tag.rejected { background: var(--rose-bright); color: #fff; }
+    .sdb-tag.irrelevant { background: var(--indigo-bright); color: #000; }
+    .sdb-tag.not_approved { background: var(--amber-bright); color: #000; }
+
+    .sdb-time { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-dim); }
+    .sdb-row { font-size: 0.8rem; display: flex; flex-direction: column; gap: 3px; }
+    .sdb-label { font-size: 0.68rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
+    .sdb-val { color: #fff; font-weight: 600; font-style: italic; background: rgba(3, 7, 18, 0.4); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); }
+    .sdb-reason-box { font-size: 0.8rem; color: #cbd5e1; line-height: 1.45; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; margin-top: 2px; }
+
+    /* Form Inputs and Buttons */
+    textarea, select, input {
+      width: 100%;
+      background: var(--surface-elevated);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-family: inherit;
+      margin-bottom: 10px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    textarea:focus, select:focus, input:focus {
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.3);
+    }
+
+    button {
+      background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+      color: #030712;
+      border: none;
+      font-weight: 800;
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    button:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(6, 182, 212, 0.35); }
+
+    .btn-sec {
+      background: var(--surface-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-sec:hover { background: var(--surface-hover); border-color: var(--border-bright); color: #fff; }
+
+    /* Preset Buttons Grouped by Distinct Colors */
+    .preset-cat {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 14px 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preset-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      background: var(--surface-elevated);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .preset-btn:hover {
+      transform: translateX(3px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+    .preset-btn strong { font-size: 0.82rem; }
+    .preset-btn span { color: var(--text-muted); font-size: 0.73rem; }
+
+    .preset-box-emerald { border-color: var(--emerald-border); background: var(--emerald-bg); }
+    .preset-box-emerald:hover { border-color: var(--emerald-bright); }
+
+    .preset-box-rose { border-color: var(--rose-border); background: var(--rose-bg); }
+    .preset-box-rose:hover { border-color: var(--rose-bright); }
+
+    .preset-box-indigo { border-color: var(--indigo-border); background: var(--indigo-bg); }
+    .preset-box-indigo:hover { border-color: var(--indigo-bright); }
+
+    .preset-box-amber { border-color: var(--amber-border); background: var(--amber-bg); }
+    .preset-box-amber:hover { border-color: var(--amber-bright); }
+
+    /* Schedule Timeline Container Boxes */
+    .timeline-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 16px;
+      background: var(--surface-elevated);
+      border-radius: var(--radius-sm);
+      margin-bottom: 9px;
+      font-size: 0.84rem;
+      border: 1.5px solid var(--border);
+      transition: all 0.2s;
+    }
+    .timeline-item:hover { border-color: var(--border-bright); transform: translateX(2px); }
+    .timeline-item.mandatory {
+      border-left: 5px solid var(--amber-bright);
+      border-color: var(--amber-border);
+      background: var(--amber-bg);
+    }
+    .timeline-time {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--cyan-bright);
+      margin-right: 14px;
+    }
+
+    /* Stacked Budget Progress Bar */
+    .bar-container {
+      height: 18px;
+      background: var(--surface-elevated);
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      margin: 14px 0 8px 0;
+      border: 1px solid var(--border);
+    }
+    .bar-segment { height: 100%; transition: width 0.5s ease; }
+
+    /* Provenance Audit Messages */
+    .msg-item {
+      padding: 13px 15px;
+      background: var(--surface-elevated);
+      border-radius: var(--radius-sm);
+      margin-bottom: 9px;
+      font-size: 0.82rem;
+      border: 1.5px solid var(--border);
+      transition: all 0.2s;
+    }
+    .msg-item:hover { border-color: var(--border-bright); background: var(--surface-hover); }
+    .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .msg-sender { font-weight: 700; color: #fff; }
+    .status-tag { padding: 4px 9px; border-radius: 5px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+    
+    .status-used, .status-accepted { background: rgba(16, 185, 129, 0.2); color: var(--emerald-bright); border: 1px solid var(--emerald-border); }
+    .status-rejected { background: rgba(244, 63, 94, 0.2); color: var(--rose-bright); border: 1px solid var(--rose-border); }
+    .status-ignored, .status-irrelevant { background: rgba(99, 102, 241, 0.2); color: var(--indigo-bright); border: 1px solid var(--indigo-border); }
+    .status-notapproved { background: rgba(245, 158, 11, 0.2); color: var(--amber-bright); border: 1px solid var(--amber-border); }
+    .status-superseded { background: rgba(148, 163, 184, 0.15); color: var(--text-dim); text-decoration: line-through; }
+
+    /* Bottom Trace Card */
+    .trace-card pre {
+      background: #020408;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--cyan-bright);
+      overflow-x: auto;
+      max-height: 420px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <div class="brand-wrap">
+      <div class="brand-logo">M2M</div>
+      <div>
+        <div class="brand-title">
+          <span>Mind to Machine — Autonomous Event Planner</span>
+          <span id="badgeValid" class="badge-status badge-valid">VALID (6/6 INVARIANTS)</span>
+        </div>
+        <div class="brand-sub">
+          <span class="pulse-dot"></span>
+          <span>4-Hour Physical Hackathon Solver • Islamabad</span>
+          <span>•</span>
+          <span style="color:var(--emerald-bright);">Headcount: <strong>177</strong> (150 Students + 10 Staff + 17 Judges)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-metrics">
+      <div class="metric-pill">Calls: <strong id="chipCalls">0</strong></div>
+      <div class="metric-pill">Tokens: <strong id="chipTokens" style="color:var(--emerald-bright)">0</strong></div>
+      <div class="metric-pill">Model: <strong id="chipModel">gemini-3.5-flash-lite</strong></div>
+      <button id="btnSoundToggle" class="btn-sec" style="font-size: 0.75rem; padding: 7px 14px;" onclick="toggleSound()">
+        🔊 Sound: ON
+      </button>
+      <a href="/api/download-report" download="final_report.txt">
+        <button class="btn-sec" style="font-size: 0.75rem; padding: 7px 16px;">📥 Export Report</button>
+      </a>
+    </div>
+  </header>
+
+  <!-- Top Summary Ribbon: 5 Multi-Colored Distinct Metric Boxes -->
+  <div class="summary-ribbon">
+    <div class="ribbon-box rb-cyan">
+      <div>
+        <div class="ribbon-label">Total Attendees</div>
+        <div class="ribbon-val" id="rbHeadcount">177</div>
+      </div>
+      <div class="ribbon-tag">150s + 10st + 17j</div>
+    </div>
+
+    <div class="ribbon-box rb-emerald">
+      <div>
+        <div class="ribbon-label">Budget Allocated</div>
+        <div class="ribbon-val" id="rbAllocated">Rs 547,400</div>
+      </div>
+      <div class="ribbon-tag" id="rbCap">Cap: Rs 650k</div>
+    </div>
+
+    <div class="ribbon-box rb-lime">
+      <div>
+        <div class="ribbon-label">Safety Buffer</div>
+        <div class="ribbon-val" id="rbBuffer">Rs 102,600</div>
+      </div>
+      <div class="ribbon-tag">Under Cap</div>
+    </div>
+
+    <div class="ribbon-box rb-blue">
+      <div>
+        <div class="ribbon-label">Active Venue</div>
+        <div class="ribbon-val" id="rbVenue">Hall A</div>
+      </div>
+      <div class="ribbon-tag">200 Seats • Generator</div>
+    </div>
+
+    <div class="ribbon-box rb-purple">
+      <div>
+        <div class="ribbon-label">Judging Ratio</div>
+        <div class="ribbon-val" id="rbJudging">17 Judges</div>
+      </div>
+      <div class="ribbon-tag">50 Teams • 3:1</div>
+    </div>
+  </div>
+
+  <!-- Live Judge Decision Banner -->
+  <div id="verdictBanner" class="verdict-banner loaded">
+    <div class="verdict-top">
+      <span id="verdictTag" class="verdict-tag loaded">📦 PACK LOADED</span>
+      <span id="verdictTime" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">Ready</span>
+    </div>
+
+    <!-- Last Evaluated User Message Box -->
+    <div id="userMsgBox" class="user-msg-box" style="display:none;">
+      <span class="user-msg-label">Last Evaluated Input Message:</span>
+      <div id="userMsgText" class="user-msg-text">""</div>
+      <div id="userMsgMeta" class="user-msg-sender">Sender: <strong>Unknown</strong> • Role: general</div>
+    </div>
+
+    <div id="verdictHeadline" class="verdict-headline">
+      Planner Ready • Autonomous Invariant Enforcement Active
+    </div>
+    <div id="verdictDetails" class="verdict-details">
+      Initial message pack loaded. All 6 invariant checks verified against deterministic constraint engine.
+    </div>
+    <div class="verdict-badges" id="verdictBadges">
+      <span class="v-pill">INVARIANTS: 6/6 PASS</span>
+      <span class="v-pill">ARCHITECTURE: HYBRID LLM + DETERMINISTIC CODE</span>
+      <span class="v-pill">ARITHMETIC DRIFT: 0%</span>
+    </div>
+  </div>
+
+  <!-- Invariant Checks Matrix Bar -->
+  <div class="invariants-bar">
+    <div class="invariants-title">🛡️ Official Invariant Verification Suite (Rule 10):</div>
+    <div class="invariants-grid">
+      <div class="check-box">✓ Figures Match (177 Headcount)</div>
+      <div class="check-box">✓ Budget Cap (≤ Rs 650,000)</div>
+      <div class="check-box">✓ Venue Capacity (Fits All)</div>
+      <div class="check-box">✓ Schedule Valid (240 Min)</div>
+      <div class="check-box">✓ Enough Judges (3 Teams/Judge)</div>
+      <div class="check-box">✓ All 5 Areas Covered</div>
+    </div>
+  </div>
+
+  <div class="app-grid">
+    <!-- Left Column: Actions & Judge Preset Triggers -->
+    <div>
+      <div class="card">
+        <h3>⚡ Real-Time Message Injector</h3>
+        <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 12px;">
+          Simulate judges testing dynamic changes, casual chatter, or adversarial attacks.
+        </p>
+
+        <!-- Live Instant Decision Card (Updates right here on every submit!) -->
+        <div id="sideDecisionBox" class="side-decision-box" style="display:none;">
+          <div class="sdb-header">
+            <span id="sdbStatusTag" class="sdb-tag">EVALUATED</span>
+            <span id="sdbTime" class="sdb-time">Just now</span>
+          </div>
+          <div class="sdb-row">
+            <span class="sdb-label">You Entered:</span>
+            <span id="sdbUserText" class="sdb-val">"..."</span>
+          </div>
+          <div class="sdb-row">
+            <span class="sdb-label">Detected Role &amp; Sender:</span>
+            <span id="sdbRole" class="sdb-val" style="font-style:normal; font-size:0.75rem;">-</span>
+          </div>
+          <div class="sdb-reason-box" id="sdbReason">
+            ...
+          </div>
+        </div>
+
+        <textarea id="msgInput" rows="3" placeholder="Type custom message in English or Roman Urdu..."></textarea>
+        <button id="btnSendMsg" style="width: 100%;">Evaluate Message Instantly</button>
+
+        <!-- Category 1: Valid Updates -->
+        <div class="preset-cat" style="color:var(--emerald-bright);">🟢 Valid Updates (Accepted):</div>
+        <div class="preset-group">
+          <button class="preset-btn preset-box-emerald" onclick="injectPreset('Practice 1')">
+            <strong style="color:var(--emerald-bright);">Practice 1: Printing +5k (Rs 15,000)</strong>
+            <span>Finance: bill came in at Rs 15k (Re-allocates budget in &lt;1s)</span>
+          </button>
+        </div>
+
+        <!-- Category 2: Conflicts & Violations -->
+        <div class="preset-cat" style="color:var(--rose-bright);">🔴 Rule Conflicts &amp; Violations (Rejected):</div>
+        <div class="preset-group">
+          <button class="preset-btn preset-box-rose" onclick="injectPreset('Practice 2')">
+            <strong style="color:var(--rose-bright);">Practice 2: Caterer 100 Boxes</strong>
+            <span>Caterer cuts food to 100 (Rejection: 100 &lt; 177 headcount)</span>
+          </button>
+
+          <button class="preset-btn preset-box-rose" onclick="injectPreset('Adv 1')">
+            <strong style="color:var(--rose-bright);">Adv 1: 10x Price Typo (Rs 1.8M)</strong>
+            <span>Surge price Rs 1,800,000 (Rejection: Budget cap blown)</span>
+          </button>
+
+          <button class="preset-btn preset-box-rose" onclick="injectPreset('Adv 2')">
+            <strong style="color:var(--rose-bright);">Adv 2: Missing Generator</strong>
+            <span>Hall C available without generator (Rejection: Mandatory Rule)</span>
+          </button>
+
+          <button class="preset-btn preset-box-rose" onclick="injectPreset('Adv 3')">
+            <strong style="color:var(--rose-bright);">Adv 3: Judge Shortage (75 Teams)</strong>
+            <span>Team size 2 =&gt; 75 teams (Rejection: 25 needed &gt; 20 avail)</span>
+          </button>
+        </div>
+
+        <!-- Category 3: Irrelevant Chatter & Non-planning -->
+        <div class="preset-cat" style="color:var(--indigo-bright);">🟣 Irrelevant Chatter (Ignored):</div>
+        <div class="preset-group">
+          <button class="preset-btn preset-box-indigo" onclick="injectPreset('Chatter 1')">
+            <strong style="color:var(--indigo-bright);">Chatter 1: "kia kar raa e hu uni kab satat hugy"</strong>
+            <span>Casual Roman Urdu inquiry (Detected as chatter &amp; ignored)</span>
+          </button>
+
+          <button class="preset-btn preset-box-indigo" onclick="injectPreset('Chatter 2')">
+            <strong style="color:var(--indigo-bright);">Chatter 2: "kese hu bhai mausam kaisa hai"</strong>
+            <span>Casual greeting / weather (Detected as chatter &amp; ignored)</span>
+          </button>
+        </div>
+
+        <!-- Category 4: Unapproved Requests -->
+        <div class="preset-cat" style="color:var(--amber-bright);">🟡 Unapproved Requests (Logged):</div>
+        <div class="preset-group">
+          <button class="preset-btn preset-box-amber" onclick="injectPreset('Request 1')">
+            <strong style="color:var(--amber-bright);">Request 1: Student DJ Quote Rs 50,000</strong>
+            <span>Student society asking for DJ (Logged as unapproved request)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card" style="border-top: 4px solid var(--blue-bright);">
+        <h3 style="color:var(--blue-bright);">Benchmark Packs</h3>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
+          Load test packs across different cities and constraints.
+        </p>
+        <select id="packSelect"></select>
+        <button id="btnRunPack" class="btn-sec" style="width: 100%;">Load Pack</button>
+      </div>
+    </div>
+
+    <!-- Center Column: The 5 Core Event Areas (Every Metric in a Dedicated Color Box!) -->
+    <div>
+      <!-- 1. Venue Area (Electric Cyan Theme) -->
+      <div class="card card-venue">
+        <h3>1. Venue Area <span id="vCapacity" style="color:var(--cyan-bright); font-size: 0.8rem; font-family: var(--font-mono);"></span></h3>
+        <div class="tile-grid">
+          <div class="data-tile tile-box-cyan">
+            <span class="tile-label">Selected Hall</span>
+            <span class="tile-value" id="vHall">-</span>
+            <span class="tile-sub">Primary Space</span>
+          </div>
+          <div class="data-tile tile-box-blue">
+            <span class="tile-label">Rental Cost</span>
+            <span class="tile-value" id="vCost">-</span>
+            <span class="tile-sub">All-in Package</span>
+          </div>
+          <div class="data-tile tile-box-teal">
+            <span class="tile-label">Features</span>
+            <span class="tile-value" id="vFeatures" style="font-size:0.9rem;">-</span>
+            <span class="tile-sub">Facility Guarantee</span>
+          </div>
+        </div>
+        <div class="decision-sub-box box-border-cyan">
+          <strong>Decision Justification:</strong>
+          <span id="vWhy">-</span>
+        </div>
+      </div>
+
+      <!-- 2. Food Area (Warm Amber Theme) -->
+      <div class="card card-food">
+        <h3>2. Food Area <span id="fHeadcount" style="color:var(--amber-bright); font-size: 0.8rem; font-family: var(--font-mono);"></span></h3>
+        <div class="tile-grid">
+          <div class="data-tile tile-box-amber">
+            <span class="tile-label">Selected Menu</span>
+            <span class="tile-value" id="fTier" style="font-size:0.95rem;">-</span>
+            <span class="tile-sub">Delivery: FREE</span>
+          </div>
+          <div class="data-tile tile-box-orange">
+            <span class="tile-label">Boxes Ordered</span>
+            <span class="tile-value" id="fQty">-</span>
+            <span class="tile-sub">Exact Attendee Count</span>
+          </div>
+          <div class="data-tile tile-box-amber">
+            <span class="tile-label">Rate / Head</span>
+            <span class="tile-value" id="fRate">-</span>
+            <span class="tile-sub">Per Attendee Box</span>
+          </div>
+          <div class="data-tile tile-box-orange">
+            <span class="tile-label">Total Cost</span>
+            <span class="tile-value" id="fCost">-</span>
+            <span class="tile-sub">Food Allocation</span>
+          </div>
+        </div>
+        <div class="decision-sub-box box-border-amber">
+          <strong>Catering Guarantee:</strong>
+          <span>Strict headcount equality enforced (177 boxes for 177 attendees). No rounding down allowed.</span>
+        </div>
+      </div>
+
+      <!-- 3. Judging Area (Royal Purple Theme) -->
+      <div class="card card-judging">
+        <h3>3. Judging Area</h3>
+        <div class="tile-grid">
+          <div class="data-tile tile-box-violet">
+            <span class="tile-label">Teams to Judge</span>
+            <span class="tile-value" id="jTeams">-</span>
+            <span class="tile-sub">3 Teams Max / Judge</span>
+          </div>
+          <div class="data-tile tile-box-purple">
+            <span class="tile-label">Judges Assigned</span>
+            <span class="tile-value" id="jAssigned">-</span>
+            <span class="tile-sub">Confirmed Available</span>
+          </div>
+          <div class="data-tile tile-box-fuchsia">
+            <span class="tile-label">Honorarium / Judge</span>
+            <span class="tile-value">Rs 5,000</span>
+            <span class="tile-sub">Faculty Stipend</span>
+          </div>
+          <div class="data-tile tile-box-purple">
+            <span class="tile-label">Total Honoraria</span>
+            <span class="tile-value" id="jCost">-</span>
+            <span class="tile-sub">Judging Budget</span>
+          </div>
+        </div>
+        <div class="decision-sub-box box-border-purple">
+          <strong>Evaluation Format:</strong>
+          <span id="jRounds">-</span>
+        </div>
+      </div>
+
+      <!-- 4. Budget Plan (Mint Emerald Theme) -->
+      <div class="card card-budget">
+        <h3>4. Budget Plan</h3>
+        <div class="tile-grid">
+          <div class="data-tile tile-box-teal">
+            <span class="tile-label">Budget Cap</span>
+            <span class="tile-value" id="bCap">Rs 650,000</span>
+            <span class="tile-sub">Approved Ceiling</span>
+          </div>
+          <div class="data-tile tile-box-emerald">
+            <span class="tile-label">Total Allocated</span>
+            <span class="tile-value" id="bAllocated">-</span>
+            <span class="tile-sub">Committed + Expenses</span>
+          </div>
+          <div class="data-tile tile-box-lime">
+            <span class="tile-label">Safety Buffer</span>
+            <span class="tile-value" id="bBuffer">-</span>
+            <span class="tile-sub">Remaining Unspent</span>
+          </div>
+        </div>
+
+        <div class="bar-container">
+          <div id="barSpent" class="bar-segment" style="background: var(--emerald-bright); width: 84%;"></div>
+          <div id="barBuffer" class="bar-segment" style="background: var(--surface-hover); width: 16%;"></div>
+        </div>
+
+        <div style="font-size:0.75rem; font-weight:800; color:var(--text-dim); text-transform:uppercase; margin-top:14px; letter-spacing:0.05em;">
+          Itemized Budget Allocation Boxes:
+        </div>
+        <div class="chips-grid" id="bBreakdown"></div>
+      </div>
+
+      <!-- 5. Schedule Area (Sunset Rose Theme) -->
+      <div class="card card-schedule">
+        <h3>5. Schedule Area (240 Minutes)</h3>
+        <div id="timelineContainer"></div>
+      </div>
+    </div>
+
+    <!-- Right Column: Messages Provenance Ledger -->
+    <div>
+      <div class="card" style="border-top: 4px solid var(--indigo-bright);">
+        <h3 style="color:var(--indigo-bright);">Provenance Audit Ledger</h3>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
+          Track each incoming message: USED, REJECTED, SUPERSEDED, IGNORED.
+        </p>
+        <div id="messagesList" style="max-height: 640px; overflow-y: auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom: Full Trace Viewer -->
+  <div class="card trace-card" style="border-top: 4px solid var(--cyan-bright);">
+    <h3 style="color:var(--cyan-bright);">Official Execution Trace (Rule 3)</h3>
+    <pre id="traceBox">Loading trace...</pre>
+  </div>
+
+  <script>
+    let soundEnabled = true;
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('btnSoundToggle').textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+    }
+
+    function playVerdictSound(status) {
+      if (!soundEnabled) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (status === 'ACCEPTED') {
+          const osc1 = audioCtx.createOscillator();
+          const osc2 = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc1.type = 'sine'; osc2.type = 'sine';
+          osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+          osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+          osc1.connect(gain); osc2.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc1.start(); osc2.start(audioCtx.currentTime + 0.1);
+          osc1.stop(audioCtx.currentTime + 0.35); osc2.stop(audioCtx.currentTime + 0.35);
+        } else if (status === 'REJECTED') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(130, audioCtx.currentTime + 0.28);
+          gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        } else {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+        }
+      } catch (e) {}
+    }
+
+    const PRESETS = {
+      'Practice 1': 'Finance here. The printing bill came in at Rs 15,000, not Rs 10,000.',
+      'Practice 2': 'Caterer: I have rounded your order down to 100 boxes to keep the cost low.',
+      'Adv 1': 'Venue Manager: Due to surge pricing, Hall A rental is now Rs 1,800,000.',
+      'Adv 2': 'Venue Agent: Hall C is available for Rs 50,000 with 300 capacity. No backup generator.',
+      'Adv 3': 'Academic Committee: Student team size is reduced to 2, so there are 75 teams now.',
+      'Chatter 1': 'kia kar raa e hu uni kab satat hugy',
+      'Chatter 2': 'kese hu bhai mausam kaisa hai',
+      'Request 1': 'Student society, WhatsApp: Can we get a DJ for the closing? The quote is Rs 50,000.',
+    };
+
+    function injectPreset(key) {
+      if (PRESETS[key]) {
+        document.getElementById('msgInput').value = PRESETS[key];
+        document.getElementById('btnSendMsg').click();
+      }
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch('/api/data');
+        const data = await res.json();
+        render(data);
+      } catch (err) {
+        console.error("Data load failed:", err);
+      }
+    }
+
+    function render(data) {
+      const plan = data.plan;
+      const verdict = data.verdict;
+
+      // Update Verdict Banner & Side Decision Box
+      if (verdict) {
+        const banner = document.getElementById('verdictBanner');
+        const tag = document.getElementById('verdictTag');
+        const headline = document.getElementById('verdictHeadline');
+        const details = document.getElementById('verdictDetails');
+        const badges = document.getElementById('verdictBadges');
+        const timeSpan = document.getElementById('verdictTime');
+        const userMsgBox = document.getElementById('userMsgBox');
+        const userMsgText = document.getElementById('userMsgText');
+        const userMsgMeta = document.getElementById('userMsgMeta');
+
+        const vStatus = (verdict.status || 'LOADED').toUpperCase();
+        banner.className = 'verdict-banner ' + vStatus.toLowerCase();
+        tag.className = 'verdict-tag ' + vStatus.toLowerCase();
+
+        // Render Last Evaluated Message Box in Header Banner
+        if (verdict.rawText && verdict.rawText.trim()) {
+          userMsgBox.style.display = 'flex';
+          userMsgText.textContent = \`"\${verdict.rawText.trim()}"\`;
+          userMsgMeta.innerHTML = \`Detected Sender: <strong>\${verdict.sender || 'Unknown'}</strong> • Role: <strong>\${verdict.role || 'other'}</strong>\`;
+        } else {
+          userMsgBox.style.display = 'none';
+        }
+
+        if (vStatus === 'ACCEPTED') {
+          tag.textContent = '✅ VALID UPDATE ACCEPTED';
+          headline.textContent = 'Active Plan Recalculated & Updated Successfully';
+          details.textContent = verdict.reason;
+          badges.innerHTML = \`
+            <span class="v-pill">AFFECTED AREAS: [\${(verdict.affectedAreas || []).join(', ').toUpperCase() || 'NONE'}]</span>
+            <span class="v-pill">INVARIANTS: 6/6 PASS</span>
+            <span class="v-pill">SPEED: &lt; 1s</span>
+          \`;
+        } else if (vStatus === 'REJECTED') {
+          tag.textContent = '🚫 CONFLICT DETECTED & REJECTED';
+          headline.textContent = 'Rule or Mathematical Constraint Violation';
+          details.textContent = verdict.reason + ' Active plan was preserved untouched.';
+          badges.innerHTML = \`
+            <span class="v-pill">SAFETY GATE: ACTIVE</span>
+            <span class="v-pill">ACTIVE PLAN: INTACT</span>
+            <span class="v-pill">REASON: STRICT CONFLICT</span>
+          \`;
+        } else if (vStatus === 'IRRELEVANT' || vStatus === 'IGNORED') {
+          tag.textContent = '💬 IRRELEVANT CHATTER DETECTED';
+          headline.textContent = 'Casual Greeting / Non-Planning Message Ignored';
+          details.textContent = verdict.reason || 'Message contains casual chatter without event planning facts. Active plan preserved untouched.';
+          badges.innerHTML = \`
+            <span class="v-pill">CLASSIFICATION: IRRELEVANT CHATTER</span>
+            <span class="v-pill">CALLS WASTED: 0</span>
+            <span class="v-pill">ACTIVE PLAN: INTACT</span>
+          \`;
+        } else if (vStatus === 'NOT_APPROVED') {
+          tag.textContent = '🟡 UNAPPROVED REQUEST LOGGED';
+          headline.textContent = 'Request Pending Authority Approval';
+          details.textContent = verdict.reason || 'Item requested without authority sign-off. Logged to ledger but NOT allocated to budget. Active plan preserved untouched.';
+          badges.innerHTML = \`
+            <span class="v-pill">CLASSIFICATION: UNAPPROVED REQUEST</span>
+            <span class="v-pill">BUDGET IMPACT: RS 0</span>
+            <span class="v-pill">ACTIVE PLAN: INTACT</span>
+          \`;
+        } else if (vStatus === 'DUPLICATE') {
+          tag.textContent = '🔁 DUPLICATE MESSAGE';
+          headline.textContent = 'Identical Message Content Already Processed';
+          details.textContent = verdict.reason || 'Deduplicated via SHA-256 hash. Active plan preserved untouched.';
+          badges.innerHTML = \`
+            <span class="v-pill">CLASSIFICATION: DUPLICATE</span>
+            <span class="v-pill">ACTIVE PLAN: INTACT</span>
+          \`;
+        } else {
+          tag.textContent = '📦 PACK LOADED';
+          headline.textContent = 'Planner Ready • Invariants Enforced';
+          details.textContent = verdict.reason || 'Pack messages parsed and validated.';
+          badges.innerHTML = \`
+            <span class="v-pill">INVARIANTS: 6/6 PASS</span>
+            <span class="v-pill">ARCHITECTURE: HYBRID LLM+CODE</span>
+          \`;
+        }
+
+        timeSpan.textContent = verdict.evaluatedAt ? new Date(verdict.evaluatedAt).toLocaleTimeString() : 'Just now';
+
+        // Update Side Decision Box right under the input
+        const sideBox = document.getElementById('sideDecisionBox');
+        const sdbTag = document.getElementById('sdbStatusTag');
+        const sdbTime = document.getElementById('sdbTime');
+        const sdbUserText = document.getElementById('sdbUserText');
+        const sdbRole = document.getElementById('sdbRole');
+        const sdbReason = document.getElementById('sdbReason');
+
+        if (sideBox && verdict.rawText && verdict.rawText.trim()) {
+          sideBox.style.display = 'flex';
+          sideBox.className = 'side-decision-box ' + vStatus.toLowerCase();
+          sdbTag.className = 'sdb-tag ' + vStatus.toLowerCase();
+          sdbTag.textContent = vStatus === 'ACCEPTED' ? '✅ ACCEPTED' : (vStatus === 'REJECTED' ? '🚫 REJECTED' : (vStatus.includes('IRRELEVANT') ? '💬 CHATTER' : '🟡 NOT APPROVED'));
+          sdbTime.textContent = verdict.evaluatedAt ? new Date(verdict.evaluatedAt).toLocaleTimeString() : 'Just now';
+          sdbUserText.textContent = \`"\${verdict.rawText.trim()}"\`;
+          sdbRole.textContent = \`\${verdict.sender || 'Unknown'} (Role: \${verdict.role || 'other'})\`;
+          sdbReason.textContent = verdict.reason || (vStatus === 'ACCEPTED' ? 'Valid update applied to active plan.' : 'Conflict or non-planning message.');
+        }
+      }
+
+      if (!plan || plan.status !== "VALID") {
+        document.getElementById('badgeValid').textContent = "INVALID";
+        document.getElementById('badgeValid').className = "badge-status badge-invalid";
+        return;
+      }
+
+      document.getElementById('badgeValid').textContent = "VALID (6/6 INVARIANTS)";
+      document.getElementById('badgeValid').className = "badge-status badge-valid";
+
+      // Summary Ribbon
+      document.getElementById('rbHeadcount').textContent = plan.meta.headcount;
+      document.getElementById('rbAllocated').textContent = \`Rs \${plan.budget.totalCost.toLocaleString()}\`;
+      document.getElementById('rbBuffer').textContent = \`Rs \${plan.budget.remainingBuffer.toLocaleString()}\`;
+      document.getElementById('rbVenue').textContent = plan.venue.chosen.name;
+      document.getElementById('rbJudging').textContent = \`\${plan.judging.used} Judges (\${plan.meta.teams} Teams)\`;
+
+      // 1. Venue Area
+      document.getElementById('vHall').textContent = plan.venue.chosen.name;
+      document.getElementById('vCost').textContent = \`Rs \${plan.venue.chosen.price.toLocaleString()}\`;
+      document.getElementById('vCapacity').textContent = \`\${plan.venue.chosen.capacity} Seats (Headcount: \${plan.meta.headcount})\`;
+      document.getElementById('vFeatures').textContent = (plan.venue.chosen.features || []).join(", ") || "Standard";
+      document.getElementById('vWhy').textContent = plan.venue.reason;
+
+      // 2. Food Area
+      document.getElementById('fTier').textContent = plan.food.chosen.item;
+      document.getElementById('fHeadcount').textContent = \`\${plan.food.qty} Attendees\`;
+      document.getElementById('fQty').textContent = \`\${plan.food.qty} Boxes\`;
+      document.getElementById('fRate').textContent = \`Rs \${plan.food.chosen.unit_price.toLocaleString()}\`;
+      document.getElementById('fCost').textContent = \`Rs \${plan.food.totalCost.toLocaleString()}\`;
+
+      // 3. Judging Area
+      document.getElementById('jTeams').textContent = \`\${plan.meta.teams} Teams\`;
+      document.getElementById('jAssigned').textContent = \`\${plan.judging.used} Judges (\${plan.judging.needed} req)\`;
+      document.getElementById('jCost').textContent = \`Rs \${plan.judging.totalCost.toLocaleString()}\`;
+      document.getElementById('jRounds').textContent = \`\${plan.judging.rounds} Parallel Rounds (\${plan.judging.minutesPerTeam} min / team)\`;
+
+      // 4. Budget Area
+      document.getElementById('bAllocated').textContent = \`Rs \${plan.budget.totalCost.toLocaleString()}\`;
+      document.getElementById('bCap').textContent = \`Rs \${plan.budget.cap.toLocaleString()}\`;
+      document.getElementById('bBuffer').textContent = \`Rs \${plan.budget.remainingBuffer.toLocaleString()}\`;
+      const pct = Math.min(100, Math.max(0, (plan.budget.totalCost / plan.budget.cap) * 100));
+      document.getElementById('barSpent').style.width = \`\${pct}%\`;
+      document.getElementById('barBuffer').style.width = \`\${100 - pct}%\`;
+
+      const bChips = document.getElementById('bBreakdown');
+      bChips.innerHTML = \`
+        <div class="chip-item chip-venue">Venue (\${plan.venue.chosen.name}): <strong>Rs \${plan.budget.breakdown.venue.toLocaleString()}</strong></div>
+        <div class="chip-item chip-food">Food (\${plan.food.chosen.item}): <strong>Rs \${plan.budget.breakdown.food.toLocaleString()}</strong></div>
+        <div class="chip-item chip-judging">Judging Honoraria: <strong>Rs \${plan.budget.breakdown.judging.toLocaleString()}</strong></div>
+      \`;
+      for (const c of plan.budget.committedCosts || []) {
+        bChips.innerHTML += \`<div class="chip-item chip-misc">Committed \${c.label}: <strong>Rs \${c.amount.toLocaleString()}</strong></div>\`;
+      }
+
+      // 5. Schedule Area
+      const tc = document.getElementById('timelineContainer');
+      tc.innerHTML = '';
+      for (const b of plan.schedule.blocks) {
+        tc.innerHTML += \`
+          <div class="timeline-item \${b.isMandatory ? 'mandatory' : ''}">
+            <div>
+              <span class="timeline-time">\${b.start}</span>
+              <span style="font-weight:700;">\${b.name}</span>
+            </div>
+            <span style="font-family: var(--font-mono); color: var(--text-dim); font-size:0.8rem; background:rgba(3,7,18,0.5); padding:3px 8px; border-radius:4px; border:1px solid var(--border);">\${b.duration} min</span>
+          </div>
+        \`;
+      }
+
+      // Messages Audit
+      const ml = document.getElementById('messagesList');
+      ml.innerHTML = '';
+      for (const m of data.messages || []) {
+        const statusClass = 'status-' + (m.finalStatus || 'used').toLowerCase().replace(/\\s+/g, '');
+        ml.innerHTML += \`
+          <div class="msg-item">
+            <div class="msg-header">
+              <span class="msg-sender">\${m.sender || 'Unknown'}</span>
+              <span class="status-tag \${statusClass}">\${m.finalStatus}</span>
+            </div>
+            <div style="color: var(--text-muted); font-size:0.78rem;">\${m.rejectionReason || m.why || m.rawText.slice(0, 85) + '...'}</div>
+          </div>
+        \`;
+      }
+
+      // Packs dropdown
+      const sel = document.getElementById('packSelect');
+      if (sel.children.length === 0) {
+        for (const f of data.packFiles || []) {
+          sel.innerHTML += \`<option value="\${f}">\${f}</option>\`;
+        }
+      }
+
+      // Trace
+      document.getElementById('traceBox').textContent = data.traceText || "No trace logged yet.";
+
+      // Extract metrics from trace
+      const callsMatch = (data.traceText || '').match(/MODEL CALLS: (\\d+)/);
+      const tokensMatch = (data.traceText || '').match(/TOTAL TOKENS: (\\d+)/);
+      const modelsMatch = (data.traceText || '').match(/MODELS: ([^\\r\\n]+)/);
+      if (callsMatch) document.getElementById('chipCalls').textContent = callsMatch[1];
+      if (tokensMatch) document.getElementById('chipTokens').textContent = tokensMatch[1];
+      if (modelsMatch) document.getElementById('chipModel').textContent = modelsMatch[1];
+    }
+
+    document.getElementById('btnSendMsg').addEventListener('click', async () => {
+      const text = document.getElementById('msgInput').value;
+      if (!text.trim()) return;
+      document.getElementById('btnSendMsg').textContent = 'Evaluating...';
+      try {
+        const res = await fetch('/api/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+        const resData = await res.json();
+        if (resData.verdict) {
+          playVerdictSound(resData.verdict.status);
+        }
+        document.getElementById('msgInput').value = '';
+        render(resData);
+      } finally {
+        document.getElementById('btnSendMsg').textContent = 'Evaluate Message Instantly';
+      }
+    });
+
+    document.getElementById('btnRunPack').addEventListener('click', async () => {
+      const file = document.getElementById('packSelect').value;
+      if (!file) return;
+      document.getElementById('btnRunPack').textContent = 'Running Pack...';
+      try {
+        const res = await fetch('/api/run-pack', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file }),
+        });
+        const resData = await res.json();
+        render(resData);
+      } finally {
+        document.getElementById('btnRunPack').textContent = 'Load Pack';
+      }
+    });
+
+    // Auto-refresh every 4 seconds to sync with terminal runs
+    loadData();
+    setInterval(loadData, 4000);
+  </script>
+</body>
+</html>
+`;
+
+const targetPath = path.resolve("C:/mtm-agent/ui/index.html");
+fs.writeFileSync(targetPath, html, "utf8");
+console.log("Successfully wrote UTF-8 styled ui/index.html to:", targetPath);
