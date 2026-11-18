@@ -1,0 +1,14 @@
+{
+  "name": "mtm-hackathon-planner",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Autonomous event planner agent for Mind to Machine Hackathon 2026",
+  "scripts": {
+    "plan": "node plan.mjs",
+    "serve": "node serve.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

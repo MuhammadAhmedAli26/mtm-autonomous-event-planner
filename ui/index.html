@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mind to Machine — Autonomous Hackathon Planner</title>
+  <style>
+    :root {
+      --bg: #090e11;
+      --surface: #121a1f;
+      --surface-2: #19242b;
+      --border: #22323c;
+      --text: #e6edf3;
+      --text-muted: #8b9baa;
+      --accent: #10b981;
+      --accent-dim: rgba(16, 185, 129, 0.15);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      padding: 16px;
+    }
+
+    /* Top Bar */
+    header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-valid { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
+    .badge-invalid { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-chip { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; }
+
+    .status-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+    /* Layout Grid */
+    .app-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr 340px;
+      gap: 20px;
+    }
+
+    @media (max-width: 1200px) {
+      .app-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Forms */
+    textarea, select, input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    textarea:focus, select:focus, input:focus { border-color: var(--accent); }
+
+    button {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+    button.btn-sec { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    button.btn-sec:hover { background: var(--border); }
+
+    .quick-btns { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .quick-btns button { font-size: 0.75rem; padding: 6px; text-align: left; }
+
+    /* Key-Value Tables */
+    .kv-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .kv-table td { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .kv-table td:first-child { color: var(--text-muted); width: 40%; }
+    .kv-table td:last-child { font-weight: 600; text-align: right; }
+
+    /* Timeline */
+    .timeline-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--surface-2);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+    }
+    .timeline-item.mandatory { border-left: 3px solid var(--accent); }
+    .timeline-time { font-family: var(--font-mono); font-weight: 700; color: var(--accent); margin-right: 10px; }
+
+    /* Stacked Bar */
+    .bar-container {
+      height: 14px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      margin: 12px 0 6px 0;
+    }
+    .bar-segment { height: 100%; }
+
+    /* Messages Table */
+    .msg-item {
+      padding: 10px;
+      background: var(--surface-2);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+    .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .msg-sender { font-weight: 700; }
+    .status-tag { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+    .status-used { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    .status-rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .status-ignored { background: rgba(139, 155, 170, 0.2); color: var(--text-muted); }
+    .status-notapproved { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    .status-superseded { background: rgba(139, 155, 170, 0.2); color: var(--text-muted); text-decoration: line-through; }
+
+    /* Trace Section */
+    .trace-card pre {
+      background: #05080a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #7ee787;
+      overflow-x: auto;
+      max-height: 400px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header>
+    <div>
+      <div class="brand-title">
+        <span>Mind to Machine — Autonomous Hackathon Planner</span>
+        <span id="badgeValid" class="badge badge-valid">VALID</span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+        4-Hour Physical Hackathon Solver • Target: Islamabad (150 Students, 50 Teams, 10 Staff)
+      </div>
+    </div>
+
+    <div class="status-chips">
+      <div class="badge-chip">Calls: <strong id="chipCalls" style="color:var(--text)">0</strong></div>
+      <div class="badge-chip">Total Tokens: <strong id="chipTokens" style="color:var(--accent)">0</strong></div>
+      <div class="badge-chip">Model: <strong id="chipModel" style="color:var(--text)">gemini-3.5-flash-lite</strong></div>
+      <a href="/api/download-report" download="final_report.txt">
+        <button class="btn-sec" style="font-size: 0.75rem; padding: 6px 12px;">Download Report</button>
+      </a>
+    </div>
+  </header>
+
+  <div class="app-grid">
+    <!-- Left Column: Actions -->
+    <div>
+      <div class="card">
+        <h3>Inject Message (Rules 4 & 5)</h3>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+          Paste an incremental judge message. Updates under 1s with at most 5 model calls.
+        </p>
+        <textarea id="msgInput" rows="4" placeholder="e.g. Caterer: I have rounded your order down to 100 boxes..."></textarea>
+        <button id="btnSendMsg" style="width: 100%;">Send Message</button>
+
+        <div class="quick-btns">
+          <button class="btn-sec" onclick="fillMsg('Finance here. The printing bill came in at Rs 15,000, not Rs 10,000.')">
+            Practice 1 (Printing +5k)
+          </button>
+          <button class="btn-sec" onclick="fillMsg('Caterer: I have rounded your order down to 100 boxes to keep the cost low.')">
+            Practice 2 (Reject 100 boxes)
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Run File Pack</h3>
+        <select id="packSelect"></select>
+        <button id="btnRunPack" class="btn-sec" style="width: 100%;">Run Pack</button>
+      </div>
+    </div>
+
+    <!-- Center Column: The 5 Areas -->
+    <div>
+      <!-- 1. Venue -->
+      <div class="card">
+        <h3>1. Venue Area <span id="vCapacity" style="color:var(--text); font-size: 0.8rem;"></span></h3>
+        <table class="kv-table">
+          <tr><td>Selected Hall</td><td id="vHall">-</td></tr>
+          <tr><td>Rental Cost</td><td id="vCost">-</td></tr>
+          <tr><td>Features</td><td id="vFeatures">-</td></tr>
+          <tr><td>Decision Why</td><td id="vWhy" style="font-size: 0.75rem; color: var(--text-muted);">-</td></tr>
+        </table>
+      </div>
+
+      <!-- 2. Food -->
+      <div class="card">
+        <h3>2. Food Area <span id="fHeadcount" style="color:var(--text); font-size: 0.8rem;"></span></h3>
+        <table class="kv-table">
+          <tr><td>Selected Tier</td><td id="fTier">-</td></tr>
+          <tr><td>Boxes Ordered</td><td id="fQty">-</td></tr>
+          <tr><td>Rate per Head</td><td id="fRate">-</td></tr>
+          <tr><td>Total Food Cost</td><td id="fCost" style="color: var(--accent);">-</td></tr>
+        </table>
+      </div>
+
+      <!-- 3. Judging -->
+      <div class="card">
+        <h3>3. Judging Area</h3>
+        <table class="kv-table">
+          <tr><td>Teams to Judge</td><td id="jTeams">-</td></tr>
+          <tr><td>Judges Required / Assigned</td><td id="jAssigned">-</td></tr>
+          <tr><td>Honorarium (Rs 5,000 each)</td><td id="jCost" style="color: var(--accent);">-</td></tr>
+          <tr><td>Parallel Rounds</td><td id="jRounds">-</td></tr>
+        </table>
+      </div>
+
+      <!-- 4. Budget -->
+      <div class="card">
+        <h3>4. Budget Plan</h3>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+          <span>Allocated: <strong id="bAllocated">-</strong></span>
+          <span>Cap: <strong id="bCap">Rs 650,000</strong></span>
+        </div>
+        <div class="bar-container">
+          <div id="barSpent" class="bar-segment" style="background: var(--accent); width: 85%;"></div>
+          <div id="barBuffer" class="bar-segment" style="background: var(--surface-2); width: 15%;"></div>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-align: right; margin-bottom: 10px;">
+          Safety Buffer: <strong id="bBuffer" style="color: var(--success);">-</strong>
+        </div>
+        <table class="kv-table" id="bBreakdown"></table>
+      </div>
+
+      <!-- 5. Schedule -->
+      <div class="card">
+        <h3>5. Schedule Area (4-Hour Timeline)</h3>
+        <div id="timelineContainer"></div>
+      </div>
+    </div>
+
+    <!-- Right Column: Messages Audit -->
+    <div>
+      <div class="card">
+        <h3>Messages Audit Log</h3>
+        <div id="messagesList" style="max-height: 600px; overflow-y: auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom: Full Trace Viewer -->
+  <div class="card trace-card">
+    <h3>Official Execution Trace (Rule 3)</h3>
+    <pre id="traceBox">Loading trace...</pre>
+  </div>
+
+  <script>
+    function fillMsg(text) {
+      document.getElementById('msgInput').value = text;
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch('/api/data');
+        const data = await res.json();
+        render(data);
+      } catch (err) {
+        console.error("Data load failed:", err);
+      }
+    }
+
+    function render(data) {
+      const plan = data.plan;
+      if (!plan || plan.status !== "VALID") {
+        document.getElementById('badgeValid').textContent = "INVALID";
+        document.getElementById('badgeValid').className = "badge badge-invalid";
+        return;
+      }
+
+      document.getElementById('badgeValid').textContent = "VALID";
+      document.getElementById('badgeValid').className = "badge badge-valid";
+
+      // 1. Venue
+      document.getElementById('vHall').textContent = plan.venue.chosen.name;
+      document.getElementById('vCost').textContent = `Rs ${plan.venue.chosen.price.toLocaleString()}`;
+      document.getElementById('vCapacity').textContent = `${plan.venue.chosen.capacity} seats (Headcount: ${plan.meta.headcount})`;
+      document.getElementById('vFeatures').textContent = (plan.venue.chosen.features || []).join(", ") || "Standard";
+      document.getElementById('vWhy').textContent = plan.venue.reason;
+
+      // 2. Food
+      document.getElementById('fTier').textContent = plan.food.chosen.item;
+      document.getElementById('fHeadcount').textContent = `${plan.food.qty} attendees`;
+      document.getElementById('fQty').textContent = `${plan.food.qty} boxes`;
+      document.getElementById('fRate').textContent = `Rs ${plan.food.chosen.unit_price.toLocaleString()} / head (Delivery: FREE)`;
+      document.getElementById('fCost').textContent = `Rs ${plan.food.totalCost.toLocaleString()}`;
+
+      // 3. Judging
+      document.getElementById('jTeams').textContent = `${plan.meta.teams} teams (${plan.judging.maxTeamsPerJudge} max / judge)`;
+      document.getElementById('jAssigned').textContent = `${plan.judging.needed} needed / ${plan.judging.used} assigned`;
+      document.getElementById('jCost').textContent = `Rs ${plan.judging.totalCost.toLocaleString()}`;
+      document.getElementById('jRounds').textContent = `${plan.judging.rounds} rounds (${plan.judging.minutesPerTeam} min / team)`;
+
+      // 4. Budget
+      document.getElementById('bAllocated').textContent = `Rs ${plan.budget.totalCost.toLocaleString()}`;
+      document.getElementById('bCap').textContent = `Rs ${plan.budget.cap.toLocaleString()}`;
+      document.getElementById('bBuffer').textContent = `Rs ${plan.budget.remainingBuffer.toLocaleString()}`;
+      const pct = (plan.budget.totalCost / plan.budget.cap) * 100;
+      document.getElementById('barSpent').style.width = `${pct}%`;
+      document.getElementById('barBuffer').style.width = `${100 - pct}%`;
+
+      const bTable = document.getElementById('bBreakdown');
+      bTable.innerHTML = `
+        <tr><td>Venue (${plan.venue.chosen.name})</td><td>Rs ${plan.budget.breakdown.venue.toLocaleString()}</td></tr>
+        <tr><td>Food (${plan.food.chosen.item})</td><td>Rs ${plan.budget.breakdown.food.toLocaleString()}</td></tr>
+        <tr><td>Judging Honoraria</td><td>Rs ${plan.budget.breakdown.judging.toLocaleString()}</td></tr>
+      `;
+      for (const c of plan.budget.committedCosts || []) {
+        bTable.innerHTML += `<tr><td>Committed: ${c.label}</td><td>Rs ${c.amount.toLocaleString()}</td></tr>`;
+      }
+
+      // 5. Schedule
+      const tc = document.getElementById('timelineContainer');
+      tc.innerHTML = '';
+      for (const b of plan.schedule.blocks) {
+        tc.innerHTML += `
+          <div class="timeline-item ${b.isMandatory ? 'mandatory' : ''}">
+            <div>
+              <span class="timeline-time">${b.start}</span>
+              <span>${b.name}</span>
+            </div>
+            <span style="font-family: var(--font-mono); color: var(--text-muted);">${b.duration} min</span>
+          </div>
+        `;
+      }
+
+      // Messages Audit
+      const ml = document.getElementById('messagesList');
+      ml.innerHTML = '';
+      for (const m of data.messages || []) {
+        const statusClass = 'status-' + (m.finalStatus || 'used').toLowerCase().replace(/\s+/g, '');
+        ml.innerHTML += `
+          <div class="msg-item">
+            <div class="msg-header">
+              <span class="msg-sender">${m.sender || 'Unknown'}</span>
+              <span class="status-tag ${statusClass}">${m.finalStatus}</span>
+            </div>
+            <div style="color: var(--text-muted);">${m.rejectionReason || m.why || ''}</div>
+          </div>
+        `;
+      }
+
+      // Packs dropdown
+      const sel = document.getElementById('packSelect');
+      sel.innerHTML = '';
+      for (const f of data.packFiles || []) {
+        sel.innerHTML += `<option value="${f}">${f}</option>`;
+      }
+
+      // Trace
+      document.getElementById('traceBox').textContent = data.traceText || "No trace logged yet.";
+
+      // Extract metrics from trace
+      const callsMatch = data.traceText.match(/MODEL CALLS: (\d+)/);
+      const tokensMatch = data.traceText.match(/TOTAL TOKENS: (\d+)/);
+      const modelsMatch = data.traceText.match(/MODELS: ([^\r\n]+)/);
+      if (callsMatch) document.getElementById('chipCalls').textContent = callsMatch[1];
+      if (tokensMatch) document.getElementById('chipTokens').textContent = tokensMatch[1];
+      if (modelsMatch) document.getElementById('chipModel').textContent = modelsMatch[1];
+    }
+
+    document.getElementById('btnSendMsg').addEventListener('click', async () => {
+      const text = document.getElementById('msgInput').value;
+      if (!text.trim()) return;
+      document.getElementById('btnSendMsg').textContent = 'Evaluating...';
+      try {
+        await fetch('/api/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+        document.getElementById('msgInput').value = '';
+        await loadData();
+      } finally {
+        document.getElementById('btnSendMsg').textContent = 'Send Message';
+      }
+    });
+
+    document.getElementById('btnRunPack').addEventListener('click', async () => {
+      const file = document.getElementById('packSelect').value;
+      if (!file) return;
+      document.getElementById('btnRunPack').textContent = 'Running Pack...';
+      try {
+        await fetch('/api/run-pack', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file }),
+        });
+        await loadData();
+      } finally {
+        document.getElementById('btnRunPack').textContent = 'Run Pack';
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

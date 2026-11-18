@@ -1,0 +1,11 @@
+{
+  "start_time": "10:00",
+  "opening_duration_min": 15,
+  "closing_duration_min": 15,
+  "meal_duration_min": 15,
+  "prayer_break_min": 15,
+  "team_size": 3,
+  "minutes_per_team": 15,
+  "max_teams_per_judge": 3,
+  "honorarium_pkr": 5000
+}

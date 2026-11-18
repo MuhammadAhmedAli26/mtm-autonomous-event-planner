@@ -1,0 +1,9 @@
+.env
+.env.local
+node_modules/
+state/
+out/
+packs/
+inbox/
+notes_local/
+*.log
