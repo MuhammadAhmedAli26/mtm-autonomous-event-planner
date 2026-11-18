@@ -74,8 +74,8 @@ class TraceManager {
 
     for (const e of this.entries) {
       lines.push(`Call #${e.n} | Model: [${e.model}] | Area: [${e.area.toUpperCase()}] | Status: ${e.status} (${e.latency_ms}ms)`);
-      lines.push(`Input: ${e.input.length > 200 ? e.input.slice(0, 197) + "..." : e.input}`);
-      lines.push(`Output: ${e.output.length > 300 ? e.output.slice(0, 297) + "..." : e.output}`);
+      lines.push(`Input:\n${e.input}`);
+      lines.push(`Output:\n${e.output}`);
       lines.push(`Tokens: Prompt: ${e.promptTokens} | Output: ${e.completionTokens} | Thoughts: ${e.thoughtTokens} | Call Total: ${e.totalTokens}`);
       lines.push("--------------------------------------------------------------------------------");
     }

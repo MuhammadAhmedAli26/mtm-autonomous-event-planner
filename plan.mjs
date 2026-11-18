@@ -7,6 +7,7 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { readMessages } from "./src/reader.mjs";
 import { Ledger } from "./src/ledger.mjs";
 import { planEvent } from "./src/planner.mjs";
@@ -96,8 +97,24 @@ async function main() {
   const readResult = await readMessages(rawText, knownLabels);
   const incomingMessages = readResult.messages || [];
 
-  // Mode detection: If state exists AND incoming messages <= 3 -> UPDATE mode. Otherwise -> NEW PACK.
-  const isUpdateMode = existingState && incomingMessages.length <= 3;
+  // Stale-state rule: agar input me >=5 messages hain aur kisi ka hash state me nahi, state archive kar ke fresh run.
+  let isStale = false;
+  if (existingState && incomingMessages.length >= 5) {
+    const hasAnyHash = incomingMessages.some((m) => {
+      const h = crypto.createHash("sha256").update((m.rawText || "").trim().toLowerCase()).digest("hex");
+      return existingState.processedHashes.has(h);
+    });
+    if (!hasAnyHash) {
+      isStale = true;
+      ensureDirs();
+      const archivePath = path.join(HISTORY_DIR, `archive_stale_state_${Date.now()}.json`);
+      fs.writeFileSync(archivePath, JSON.stringify(existingState, null, 2), "utf-8");
+      trace.logDecision(`Stale state detected (>=5 messages with 0 matching hashes). Previous state archived to ${path.basename(archivePath)}.`);
+    }
+  }
+
+  // Mode detection: If state exists AND NOT stale AND incoming messages <= 3 -> UPDATE mode. Otherwise -> NEW PACK.
+  const isUpdateMode = existingState && !isStale && incomingMessages.length <= 3;
 
   let ledger;
   let currentPlan;

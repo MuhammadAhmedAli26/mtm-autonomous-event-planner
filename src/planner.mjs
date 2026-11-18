@@ -129,18 +129,53 @@ export function planEvent(claims) {
   const minOrder = minOrderRule ? minOrderRule.qty : 0;
   const foodQty = Math.max(totalHeadcount, minOrder);
 
+  // Dietary share rule (e.g. vegetarian percentage)
+  const dietaryRule = rules.find((r) => r.type === "dietary_share");
+  let dietaryBreakdown = null;
+  if (dietaryRule && dietaryRule.pct) {
+    const vegCount = Math.ceil(foodQty * (dietaryRule.pct / 100));
+    dietaryBreakdown = {
+      standardQty: foodQty - vegCount,
+      specialQty: vegCount,
+      specialLabel: dietaryRule.label || "Vegetarian",
+    };
+  }
+
   // Sort tiers from highest price to lowest price
   foods.sort((a, b) => b.unit_price - a.unit_price);
   let chosenFood = foods[0] || { item: "Standard Lunch Box", unit_price: 1200, delivery: 0 };
   let foodTotal = foodQty * chosenFood.unit_price + (chosenFood.delivery || 0);
 
+  // Surcharge / Tax % solver
+  const surchargeRules = rules.filter((r) => r.type === "surcharge" || r.type === "tax");
+  let totalSurcharges = 0;
+  for (const s of surchargeRules) {
+    const appliesTo = s.applies_to || "all";
+    let base = 0;
+    if (appliesTo === "food" || appliesTo === "all") base += foodTotal;
+    if (appliesTo === "venue" || appliesTo === "all") base += chosenVenue.price;
+    if (appliesTo === "judging" || appliesTo === "all") base += totalJudgingCost;
+    if (s.pct) totalSurcharges += Math.round(base * (s.pct / 100));
+    if (s.flat) totalSurcharges += s.flat;
+  }
+
   // Budget repair ladder
-  let totalCost = committedCostsTotal + chosenVenue.price + totalJudgingCost + foodTotal;
+  let totalCost = committedCostsTotal + chosenVenue.price + totalJudgingCost + foodTotal + totalSurcharges;
   if (totalCost > budgetCap && foods.length > 1) {
     for (let i = 1; i < foods.length; i++) {
       chosenFood = foods[i];
       foodTotal = foodQty * chosenFood.unit_price + (chosenFood.delivery || 0);
-      totalCost = committedCostsTotal + chosenVenue.price + totalJudgingCost + foodTotal;
+      let newSurcharge = 0;
+      for (const s of surchargeRules) {
+        const appliesTo = s.applies_to || "all";
+        let base = 0;
+        if (appliesTo === "food" || appliesTo === "all") base += foodTotal;
+        if (appliesTo === "venue" || appliesTo === "all") base += chosenVenue.price;
+        if (appliesTo === "judging" || appliesTo === "all") base += totalJudgingCost;
+        if (s.pct) newSurcharge += Math.round(base * (s.pct / 100));
+        if (s.flat) newSurcharge += s.flat;
+      }
+      totalCost = committedCostsTotal + chosenVenue.price + totalJudgingCost + foodTotal + newSurcharge;
       if (totalCost <= budgetCap) break;
     }
   }
@@ -150,6 +185,15 @@ export function planEvent(claims) {
       status: "UNSAT",
       reason: `Total cost Rs ${totalCost} exceeds budget cap Rs ${budgetCap} even with cheapest food option`,
       cheapestTotal: totalCost,
+    };
+  }
+
+  // Judge shortage check: if needed judges exceed confirmed available without authorized recruitment
+  const canRecruit = params.allow_recruitment ?? false;
+  if (neededJudges > availableJudges && !canRecruit) {
+    return {
+      status: "UNSAT",
+      reason: `Judges required (${neededJudges}) exceeds confirmed available pool (${availableJudges}) and recruitment is not authorized`,
     };
   }
 
@@ -220,6 +264,29 @@ export function planEvent(claims) {
     duration: judgingDurationMin,
   });
   currentMin += judgingDurationMin;
+
+  // Window rules check (e.g. meal window)
+  const windowRules = rules.filter((r) => r.type === "window");
+  for (const wr of windowRules) {
+    if (wr.what === "meal" || wr.what === "lunch") {
+      const parseClock = (s) => {
+        const [h, m] = s.split(":").map(Number);
+        return h * 60 + m;
+      };
+      const mealStartOffset = currentMin;
+      const startHour = parseInt(assumptions.start_time.split(":")[0], 10);
+      const startM = parseInt(assumptions.start_time.split(":")[1], 10);
+      const eventMealMin = startHour * 60 + startM + mealStartOffset;
+      const windowStart = parseClock(wr.from);
+      const windowEnd = parseClock(wr.to);
+      if (eventMealMin < windowStart || eventMealMin > windowEnd) {
+        return {
+          status: "UNSAT",
+          reason: `Meal timing falls outside required window ${wr.from} - ${wr.to}`,
+        };
+      }
+    }
+  }
 
   scheduleBlocks.push({
     name: "Lunch & Closing Ceremony",

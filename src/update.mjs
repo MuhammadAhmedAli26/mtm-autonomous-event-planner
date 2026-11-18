@@ -51,48 +51,49 @@ export function applyMessageUpdate(ledger, currentPlan, newMsg, existingHashes =
 
   // Transactional application on a copy of the ledger
   const trialLedger = Ledger.clone(ledger);
-  let keptClaims = [];
-  let rejectionReason = null;
 
+  // Check standing for all claims first
   for (const claim of newMsg.claims || []) {
-    // Standing check
     const standing = trialLedger.checkStanding(newMsg, claim);
     if (!standing.allowed) {
-      rejectionReason = standing.reason;
+      newMsg.finalStatus = "REJECTED";
+      newMsg.rejectionReason = standing.reason;
       trace.logDecision(`REJECTED claim: ${standing.reason}`);
-      break;
+      return {
+        accepted: false,
+        reason: newMsg.rejectionReason,
+        plan: currentPlan,
+        affectedAreas: [],
+      };
     }
 
     // Specific Hard Constraint Checks (e.g. Under-covering food commit)
     if (claim.k === "commit" && claim.what === "food_qty") {
       const currentHeadcount = currentPlan.meta.headcount;
       if (claim.qty < currentHeadcount) {
-        rejectionReason = `food quantity ${claim.qty} is below the people who must eat (${currentPlan.meta.students} students + ${currentPlan.meta.staff} staff + ${currentPlan.meta.judges} judges = ${currentHeadcount})`;
-        trace.logDecision(`REJECTED: ${rejectionReason}`);
-        break;
+        newMsg.finalStatus = "REJECTED";
+        newMsg.rejectionReason = `food quantity ${claim.qty} is below the people who must eat (${currentPlan.meta.students} students + ${currentPlan.meta.staff} staff + ${currentPlan.meta.judges} judges = ${currentHeadcount})`;
+        trace.logDecision(`REJECTED: ${newMsg.rejectionReason}`);
+        return {
+          accepted: false,
+          reason: newMsg.rejectionReason,
+          plan: currentPlan,
+          affectedAreas: [],
+        };
       }
-    }
-
-    // Trial application
-    const trialClaims = trialLedger.getActiveClaims();
-    // Add trial claim
-    trialClaims.push(claim);
-    const candidatePlan = planEvent(trialClaims);
-    const candidateChecks = runSixChecks(candidatePlan, trialLedger);
-
-    if (candidateChecks.allPassed) {
-      keptClaims.push(claim);
-    } else {
-      rejectionReason = candidatePlan.reason || "Invariant checks failed";
-      trace.logDecision(`REJECTED claim: ${rejectionReason}`);
-      break;
     }
   }
 
-  if (rejectionReason || keptClaims.length === 0) {
+  // Apply message to trial ledger so newest-wins slot resolution runs
+  trialLedger.addMessage(newMsg, trialLedger.messages.length + 1);
+  const trialClaims = trialLedger.getActiveClaims();
+  const candidatePlan = planEvent(trialClaims);
+  const candidateChecks = runSixChecks(candidatePlan, trialLedger);
+
+  if (!candidateChecks.allPassed || candidatePlan.status !== "VALID") {
     newMsg.finalStatus = "REJECTED";
-    newMsg.rejectionReason = rejectionReason || "Failed validity checks";
-    ledger.messages.push(newMsg);
+    newMsg.rejectionReason = candidatePlan.reason || candidateChecks.summary || "Failed validity checks";
+    trace.logDecision(`REJECTED message #${newMsg.id}: ${newMsg.rejectionReason}`);
     return {
       accepted: false,
       reason: newMsg.rejectionReason,
@@ -101,9 +102,9 @@ export function applyMessageUpdate(ledger, currentPlan, newMsg, existingHashes =
     };
   }
 
-  // Commit valid claims to main ledger
+  // Commit valid message to main ledger
   ledger.addMessage(newMsg, ledger.messages.length + 1);
-  const updatedPlan = planEvent(ledger.getActiveClaims());
+  const updatedPlan = candidatePlan;
 
   // Determine affected areas
   const affectedAreas = [];
