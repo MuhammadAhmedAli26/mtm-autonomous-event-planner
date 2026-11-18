@@ -139,10 +139,11 @@ async function main() {
 
       lastVerdict = {
         accepted: res.accepted,
-        status: res.accepted ? "ACCEPTED" : "REJECTED",
+        status: res.status || (res.accepted ? "ACCEPTED" : "REJECTED"),
         reason: res.reason || autoReason,
         affectedAreas: res.affectedAreas || [],
         sender: msg.sender || "Unknown",
+        role: msg.role || "other",
         rawText: msg.rawText || "",
         evaluatedAt: new Date().toISOString(),
       };

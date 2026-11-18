@@ -32,18 +32,24 @@ export function applyMessageUpdate(ledger, currentPlan, newMsg, existingHashes =
   // Irrelevant or unapproved requests are marked cleanly
   if (newMsg.status === "irrelevant") {
     newMsg.finalStatus = "IGNORED";
+    const reason = `Casual or irrelevant chatter detected: "${newMsg.why || 'No actionable event planning facts'}". Ignored from planning. Active plan preserved untouched.`;
     trace.logDecision(`Ignored irrelevant chatter: "${newMsg.rawText.slice(0, 50)}..."`);
     return {
-      accepted: true,
+      accepted: false,
+      status: "IRRELEVANT",
+      reason,
       plan: currentPlan,
       affectedAreas: [],
     };
   }
   if (newMsg.status === "request") {
     newMsg.finalStatus = "NOT APPROVED";
+    const reason = `Unapproved request logged: "${newMsg.why || 'Requires authority sign-off'}". Logged to ledger but NOT committed to budget. Active plan preserved untouched.`;
     trace.logDecision(`Not approved request logged: "${newMsg.rawText.slice(0, 50)}..."`);
     return {
-      accepted: true,
+      accepted: false,
+      status: "NOT_APPROVED",
+      reason,
       plan: currentPlan,
       affectedAreas: [],
     };

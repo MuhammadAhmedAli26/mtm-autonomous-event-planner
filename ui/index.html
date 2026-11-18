@@ -9,25 +9,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #06090e;
-      --surface: #0c1219;
-      --surface-elevated: #111a24;
-      --surface-hover: #172433;
+      --bg: #05080c;
+      --surface: #0a1017;
+      --surface-elevated: #101924;
+      --surface-hover: #162333;
       --border: rgba(255, 255, 255, 0.08);
-      --border-bright: rgba(255, 255, 255, 0.16);
+      --border-bright: rgba(255, 255, 255, 0.18);
       --text: #f1f5f9;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
       --accent: #10b981;
-      --accent-glow: rgba(16, 185, 129, 0.28);
+      --accent-glow: rgba(16, 185, 129, 0.35);
       --accent-dim: rgba(16, 185, 129, 0.12);
       --success: #10b981;
       --danger: #f43f5e;
-      --danger-glow: rgba(244, 63, 94, 0.28);
+      --danger-glow: rgba(244, 63, 94, 0.35);
       --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.35);
       --info: #06b6d4;
-      --info-glow: rgba(6, 182, 212, 0.25);
-      --purple: #a855f7;
+      --info-glow: rgba(6, 182, 212, 0.3);
+      --chatter: #818cf8;
+      --chatter-glow: rgba(129, 140, 248, 0.35);
       --radius-sm: 8px;
       --radius: 14px;
       --radius-lg: 20px;
@@ -40,13 +42,13 @@
     body {
       background-color: var(--bg);
       background-image: 
-        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.06) 0px, transparent 50%),
-        radial-gradient(at 50% 100%, rgba(168, 85, 247, 0.04) 0px, transparent 50%);
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(129, 140, 248, 0.06) 0px, transparent 50%);
       color: var(--text);
       font-family: var(--font-sans);
       line-height: 1.5;
-      padding: 20px 28px;
+      padding: 20px 30px;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
@@ -65,6 +67,22 @@
       margin-bottom: 22px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       backdrop-filter: blur(12px);
+      animation: fadeInDown 0.5s ease-out;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
     }
 
     .brand-wrap {
@@ -74,21 +92,21 @@
     }
 
     .brand-logo {
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 900;
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       color: #000;
-      box-shadow: 0 0 20px var(--accent-glow);
+      box-shadow: 0 0 25px var(--accent-glow);
     }
 
     .brand-title {
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: #fff;
@@ -112,12 +130,7 @@
       border-radius: 50%;
       background: var(--accent);
       box-shadow: 0 0 10px var(--accent);
-      animation: pulse 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.5; }
+      animation: pulseGlow 1.8s infinite ease-in-out;
     }
 
     .badge-status {
@@ -162,6 +175,7 @@
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 14px;
       margin-bottom: 22px;
+      animation: fadeInUp 0.5s ease-out;
     }
 
     .ribbon-card {
@@ -172,9 +186,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
     }
-    .ribbon-card:hover { border-color: var(--border-bright); transform: translateY(-1px); }
+    .ribbon-card:hover { border-color: var(--border-bright); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
 
     .ribbon-label { font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-dim); letter-spacing: 0.05em; }
     .ribbon-val { font-size: 1.25rem; font-weight: 800; color: #fff; margin-top: 2px; font-family: var(--font-mono); }
@@ -183,30 +197,43 @@
     /* Live Judge Decision Banner */
     .verdict-banner {
       border-radius: var(--radius-lg);
-      padding: 20px 24px;
+      padding: 22px 26px;
       margin-bottom: 24px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       overflow: hidden;
+      animation: fadeInUp 0.4s ease-out;
     }
 
     .verdict-banner.accepted {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(12, 18, 25, 0.95) 100%);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(10, 16, 23, 0.98) 100%);
       border: 2px solid var(--success);
       box-shadow: 0 0 35px var(--accent-glow);
     }
 
     .verdict-banner.rejected {
-      background: linear-gradient(135deg, rgba(244, 63, 94, 0.18) 0%, rgba(12, 18, 25, 0.95) 100%);
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.2) 0%, rgba(10, 16, 23, 0.98) 100%);
       border: 2px solid var(--danger);
       box-shadow: 0 0 35px var(--danger-glow);
     }
 
+    .verdict-banner.irrelevant {
+      background: linear-gradient(135deg, rgba(129, 140, 248, 0.18) 0%, rgba(10, 16, 23, 0.98) 100%);
+      border: 2px solid var(--chatter);
+      box-shadow: 0 0 35px var(--chatter-glow);
+    }
+
+    .verdict-banner.not_approved {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(10, 16, 23, 0.98) 100%);
+      border: 2px solid var(--warning);
+      box-shadow: 0 0 35px var(--warning-glow);
+    }
+
     .verdict-banner.loaded {
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.14) 0%, rgba(12, 18, 25, 0.95) 100%);
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(10, 16, 23, 0.98) 100%);
       border: 2px solid var(--info);
       box-shadow: 0 0 30px var(--info-glow);
     }
@@ -232,10 +259,42 @@
     }
     .verdict-tag.accepted { background: var(--success); color: #000; box-shadow: 0 0 12px var(--accent); }
     .verdict-tag.rejected { background: var(--danger); color: #fff; box-shadow: 0 0 12px var(--danger); }
+    .verdict-tag.irrelevant { background: var(--chatter); color: #000; box-shadow: 0 0 12px var(--chatter); }
+    .verdict-tag.not_approved { background: var(--warning); color: #000; box-shadow: 0 0 12px var(--warning); }
     .verdict-tag.loaded { background: var(--info); color: #000; box-shadow: 0 0 12px var(--info); }
 
+    /* Last Submitted User Message Callout */
+    .user-msg-box {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-left: 4px solid var(--accent);
+      animation: fadeInUp 0.3s ease-out;
+    }
+    .user-msg-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+    .user-msg-text {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      font-family: inherit;
+    }
+    .user-msg-sender {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
     .verdict-headline {
-      font-size: 1.15rem;
+      font-size: 1.18rem;
       font-weight: 800;
       color: #fff;
       letter-spacing: -0.01em;
@@ -244,14 +303,14 @@
     .verdict-details {
       font-size: 0.88rem;
       color: #cbd5e1;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .verdict-badges {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 6px;
+      margin-top: 4px;
     }
 
     .v-pill {
@@ -315,7 +374,7 @@
     /* Layout Grid */
     .app-grid {
       display: grid;
-      grid-template-columns: 320px 1fr 340px;
+      grid-template-columns: 330px 1fr 340px;
       gap: 22px;
     }
 
@@ -332,7 +391,9 @@
       margin-bottom: 22px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
       position: relative;
+      transition: all 0.2s ease;
     }
+    .card:hover { border-color: var(--border-bright); }
 
     .card h3 {
       font-size: 0.88rem;
@@ -381,20 +442,31 @@
     button.btn-sec { background: var(--surface-elevated); color: var(--text); border: 1px solid var(--border); }
     button.btn-sec:hover { background: var(--surface-hover); border-color: var(--border-bright); box-shadow: none; }
 
+    .preset-cat {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 14px 0 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .preset-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-top: 12px;
     }
 
     .preset-btn {
       background: var(--surface-elevated);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 10px 14px;
+      padding: 10px 12px;
       border-radius: var(--radius-sm);
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       text-align: left;
       cursor: pointer;
       transition: all 0.2s;
@@ -403,7 +475,7 @@
       gap: 2px;
     }
     .preset-btn:hover { background: var(--surface-hover); border-color: var(--accent); transform: translateX(3px); }
-    .preset-btn strong { color: #fff; font-size: 0.82rem; }
+    .preset-btn strong { color: #fff; font-size: 0.8rem; }
     .preset-btn span { color: var(--text-muted); font-size: 0.72rem; }
 
     /* Key-Value Tables */
@@ -457,7 +529,7 @@
     .status-tag { padding: 3px 8px; border-radius: 4px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
     .status-used, .status-accepted { background: rgba(16, 185, 129, 0.2); color: var(--success); }
     .status-rejected { background: rgba(244, 63, 94, 0.2); color: var(--danger); }
-    .status-ignored { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
+    .status-ignored, .status-irrelevant { background: rgba(129, 140, 248, 0.2); color: var(--chatter); }
     .status-notapproved { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
     .status-superseded { background: rgba(148, 163, 184, 0.15); color: var(--text-dim); text-decoration: line-through; }
 
@@ -559,6 +631,14 @@
       <span id="verdictTag" class="verdict-tag loaded">📦 PACK LOADED</span>
       <span id="verdictTime" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">Ready</span>
     </div>
+
+    <!-- Last Evaluated User Message Box -->
+    <div id="userMsgBox" class="user-msg-box" style="display:none;">
+      <span class="user-msg-label">Last Evaluated Input Message:</span>
+      <div id="userMsgText" class="user-msg-text">""</div>
+      <div id="userMsgMeta" class="user-msg-sender">Sender: <strong>Unknown</strong> • Role: general</div>
+    </div>
+
     <div id="verdictHeadline" class="verdict-headline">
       Planner Ready • Autonomous Invariant Enforcement Active
     </div>
@@ -591,39 +671,64 @@
       <div class="card">
         <h3>⚡ Real-Time Message Injector</h3>
         <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 10px;">
-          Simulate judges testing dynamic changes, unexpected rules, or adversarial attacks.
+          Simulate judges testing dynamic changes, casual chatter, or adversarial attacks.
         </p>
-        <textarea id="msgInput" rows="3" placeholder="Type custom message or click a judge preset below..."></textarea>
+        <textarea id="msgInput" rows="3" placeholder="Type custom message in English or Roman Urdu..."></textarea>
         <button id="btnSendMsg" style="width: 100%;">Evaluate Message Instantly</button>
 
-        <div style="margin-top: 16px; font-size: 0.72rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">
-          One-Click Judge Test Presets:
-        </div>
-
+        <!-- Category 1: Valid Updates -->
+        <div class="preset-cat">🟢 Valid Updates (Accepted):</div>
         <div class="preset-group">
           <button class="preset-btn" onclick="injectPreset('Practice 1')">
-            <strong style="color:var(--success);">🟢 Practice 1: Printing +5k (Accepted)</strong>
-            <span>Finance: Printing bill came in at Rs 15,000 (Adjusts budget in &lt;1s)</span>
+            <strong style="color:var(--success);">Practice 1: Printing +5k (Rs 15,000)</strong>
+            <span>Finance: bill came in at Rs 15k (Re-allocates budget in &lt;1s)</span>
           </button>
+        </div>
 
+        <!-- Category 2: Conflicts & Violations -->
+        <div class="preset-cat">🔴 Rule Conflicts & Violations (Rejected):</div>
+        <div class="preset-group">
           <button class="preset-btn" onclick="injectPreset('Practice 2')">
-            <strong style="color:var(--danger);">🔴 Practice 2: Caterer 100 Boxes (Rejected)</strong>
+            <strong style="color:var(--danger);">Practice 2: Caterer 100 Boxes</strong>
             <span>Caterer cuts food to 100 (Rejection: 100 &lt; 177 headcount)</span>
           </button>
 
           <button class="preset-btn" onclick="injectPreset('Adv 1')">
-            <strong style="color:var(--danger);">🔴 Adv 1: 10x Price Typo (Rejected)</strong>
-            <span>Surge price Rs 1,800,000 (Rejection: Budget exceeded)</span>
+            <strong style="color:var(--danger);">Adv 1: 10x Price Typo (Rs 1.8M)</strong>
+            <span>Surge price Rs 1,800,000 (Rejection: Budget cap blown)</span>
           </button>
 
           <button class="preset-btn" onclick="injectPreset('Adv 2')">
-            <strong style="color:var(--danger);">🔴 Adv 2: Missing Generator (Rejected)</strong>
+            <strong style="color:var(--danger);">Adv 2: Missing Generator</strong>
             <span>Hall C without backup generator (Rejection: Rule violation)</span>
           </button>
 
           <button class="preset-btn" onclick="injectPreset('Adv 3')">
-            <strong style="color:var(--danger);">🔴 Adv 3: Judge Shortage (Rejected)</strong>
-            <span>Team size 2 =&gt; 75 teams (Rejection: 25 needed &gt; 20 available)</span>
+            <strong style="color:var(--danger);">Adv 3: Judge Shortage (75 Teams)</strong>
+            <span>Team size 2 =&gt; 75 teams (Rejection: 25 needed &gt; 20 avail)</span>
+          </button>
+        </div>
+
+        <!-- Category 3: Irrelevant Chatter & Non-planning -->
+        <div class="preset-cat">💬 Irrelevant Chatter (Ignored):</div>
+        <div class="preset-group">
+          <button class="preset-btn" onclick="injectPreset('Chatter 1')">
+            <strong style="color:var(--chatter);">Chatter 1: "kia kar raa e hu uni kab satat hugy"</strong>
+            <span>Casual Roman Urdu inquiry (Detected as chatter &amp; ignored)</span>
+          </button>
+
+          <button class="preset-btn" onclick="injectPreset('Chatter 2')">
+            <strong style="color:var(--chatter);">Chatter 2: "kese hu bhai mausam kaisa hai"</strong>
+            <span>Casual greeting / weather (Detected as chatter &amp; ignored)</span>
+          </button>
+        </div>
+
+        <!-- Category 4: Unapproved Requests -->
+        <div class="preset-cat">🟡 Unapproved Requests (Logged):</div>
+        <div class="preset-group">
+          <button class="preset-btn" onclick="injectPreset('Request 1')">
+            <strong style="color:var(--warning);">Request 1: Student DJ Quote Rs 50,000</strong>
+            <span>Student society asking for DJ (Logged as unapproved request)</span>
           </button>
         </div>
       </div>
@@ -631,7 +736,7 @@
       <div class="card">
         <h3>Switch Pack (6 Variants)</h3>
         <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-          Load test packs across different cities and scenarios.
+          Load benchmark packs across different cities and scenarios.
         </p>
         <select id="packSelect"></select>
         <button id="btnRunPack" class="btn-sec" style="width: 100%;">Load Pack</button>
@@ -702,7 +807,7 @@
       <div class="card">
         <h3>Provenance Audit Ledger</h3>
         <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-          State track: USED, REJECTED, SUPERSEDED, NOT APPROVED.
+          State track: USED, REJECTED, SUPERSEDED, IGNORED.
         </p>
         <div id="messagesList" style="max-height: 640px; overflow-y: auto;"></div>
       </div>
@@ -723,11 +828,12 @@
       document.getElementById('btnSoundToggle').textContent = soundEnabled ? '🔊 Sound: ON' : '🔈 Sound: OFF';
     }
 
-    function playVerdictSound(isAccepted) {
+    function playVerdictSound(status) {
       if (!soundEnabled) return;
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (isAccepted) {
+        if (status === 'ACCEPTED') {
+          // Cheerful high dual chime
           const osc1 = audioCtx.createOscillator();
           const osc2 = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
@@ -740,16 +846,28 @@
           gain.connect(audioCtx.destination);
           osc1.start(); osc2.start(audioCtx.currentTime + 0.1);
           osc1.stop(audioCtx.currentTime + 0.35); osc2.stop(audioCtx.currentTime + 0.35);
-        } else {
+        } else if (status === 'REJECTED') {
+          // Warning alert pulse
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.25);
+          osc.frequency.exponentialRampToValueAtTime(130, audioCtx.currentTime + 0.28);
           gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.28);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
           osc.connect(gain); gain.connect(audioCtx.destination);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.28);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        } else {
+          // Soft neutral notification chime for chatter or requests
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.25);
         }
       } catch (e) {}
     }
@@ -760,6 +878,9 @@
       'Adv 1': 'Venue Manager: Due to surge pricing, Hall A rental is now Rs 1,800,000.',
       'Adv 2': 'Venue Agent: Hall C is available for Rs 50,000 with 300 capacity. No backup generator.',
       'Adv 3': 'Academic Committee: Student team size is reduced to 2, so there are 75 teams now.',
+      'Chatter 1': 'kia kar raa e hu uni kab satat hugy',
+      'Chatter 2': 'kese hu bhai mausam kaisa hai',
+      'Request 1': 'Student society, WhatsApp: Can we get a DJ for the closing? The quote is Rs 50,000.',
     };
 
     function injectPreset(key) {
@@ -791,27 +912,66 @@
         const details = document.getElementById('verdictDetails');
         const badges = document.getElementById('verdictBadges');
         const timeSpan = document.getElementById('verdictTime');
+        const userMsgBox = document.getElementById('userMsgBox');
+        const userMsgText = document.getElementById('userMsgText');
+        const userMsgMeta = document.getElementById('userMsgMeta');
 
-        banner.className = 'verdict-banner ' + verdict.status.toLowerCase();
-        tag.className = 'verdict-tag ' + verdict.status.toLowerCase();
+        const vStatus = (verdict.status || 'LOADED').toUpperCase();
+        banner.className = 'verdict-banner ' + vStatus.toLowerCase();
+        tag.className = 'verdict-tag ' + vStatus.toLowerCase();
 
-        if (verdict.status === 'ACCEPTED') {
-          tag.textContent = '✅ MESSAGE ACCEPTED';
-          headline.textContent = 'Active Plan Updated Successfully';
+        // Render Last Evaluated Message Box
+        if (verdict.rawText && verdict.rawText.trim()) {
+          userMsgBox.style.display = 'flex';
+          userMsgText.textContent = `"${verdict.rawText.trim()}"`;
+          userMsgMeta.innerHTML = `Detected Sender: <strong>${verdict.sender || 'Unknown'}</strong> • Role: <strong>${verdict.role || 'other'}</strong>`;
+        } else {
+          userMsgBox.style.display = 'none';
+        }
+
+        if (vStatus === 'ACCEPTED') {
+          tag.textContent = '✅ VALID UPDATE ACCEPTED';
+          headline.textContent = 'Active Plan Recalculated & Updated Successfully';
           details.textContent = verdict.reason;
           badges.innerHTML = `
             <span class="v-pill">AFFECTED AREAS: [${(verdict.affectedAreas || []).join(', ').toUpperCase() || 'NONE'}]</span>
             <span class="v-pill">INVARIANTS: 6/6 PASS</span>
             <span class="v-pill">SPEED: &lt; 1s</span>
           `;
-        } else if (verdict.status === 'REJECTED') {
+        } else if (vStatus === 'REJECTED') {
           tag.textContent = '🚫 CONFLICT DETECTED & REJECTED';
-          headline.textContent = 'Rule or Mathematical Invariant Violation';
+          headline.textContent = 'Rule or Mathematical Constraint Violation';
           details.textContent = verdict.reason + ' Active plan was preserved untouched.';
           badges.innerHTML = `
             <span class="v-pill">SAFETY GATE: ACTIVE</span>
             <span class="v-pill">ACTIVE PLAN: INTACT</span>
             <span class="v-pill">REASON: STRICT CONFLICT</span>
+          `;
+        } else if (vStatus === 'IRRELEVANT' || vStatus === 'IGNORED') {
+          tag.textContent = '💬 IRRELEVANT CHATTER DETECTED';
+          headline.textContent = 'Casual Greeting / Non-Planning Message Ignored';
+          details.textContent = verdict.reason || 'Message contains casual chatter or general inquiries without event planning facts. Active plan preserved untouched.';
+          badges.innerHTML = `
+            <span class="v-pill">CLASSIFICATION: IRRELEVANT CHATTER</span>
+            <span class="v-pill">CALLS WASTED: 0</span>
+            <span class="v-pill">ACTIVE PLAN: INTACT</span>
+          `;
+        } else if (vStatus === 'NOT_APPROVED') {
+          tag.textContent = '🟡 UNAPPROVED REQUEST LOGGED';
+          headline.textContent = 'Request Pending Authority Approval';
+          details.textContent = verdict.reason || 'Item requested without authority sign-off. Logged to ledger but NOT allocated to budget. Active plan preserved untouched.';
+          badges.innerHTML = `
+            <span class="v-pill">CLASSIFICATION: UNAPPROVED REQUEST</span>
+            <span class="v-pill">BUDGET IMPACT: RS 0</span>
+            <span class="v-pill">ACTIVE PLAN: INTACT</span>
+          `;
+        } else if (vStatus === 'DUPLICATE') {
+          tag.textContent = '🔄 DUPLICATE MESSAGE';
+          headline.textContent = 'Identical Message Content Already Processed';
+          details.textContent = verdict.reason || 'Deduplicated via SHA-256 hash. Active plan preserved untouched.';
+          badges.innerHTML = `
+            <span class="v-pill">CLASSIFICATION: DUPLICATE</span>
+            <span class="v-pill">ACTIVE PLAN: INTACT</span>
           `;
         } else {
           tag.textContent = '📦 PACK LOADED';
@@ -942,7 +1102,7 @@
         });
         const resData = await res.json();
         if (resData.verdict) {
-          playVerdictSound(resData.verdict.accepted);
+          playVerdictSound(resData.verdict.status);
         }
         document.getElementById('msgInput').value = '';
         await loadData();
