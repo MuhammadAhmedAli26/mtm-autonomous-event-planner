@@ -533,6 +533,35 @@
     .status-notapproved { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
     .status-superseded { background: rgba(148, 163, 184, 0.15); color: var(--text-dim); text-decoration: line-through; }
 
+    .side-decision-box {
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-hover);
+      animation: fadeInUp 0.3s ease-out;
+    }
+    .side-decision-box.accepted { border-color: var(--success); background: rgba(16, 185, 129, 0.12); }
+    .side-decision-box.rejected { border-color: var(--danger); background: rgba(244, 63, 94, 0.15); }
+    .side-decision-box.irrelevant { border-color: var(--chatter); background: rgba(129, 140, 248, 0.14); }
+    .side-decision-box.not_approved { border-color: var(--warning); background: rgba(245, 158, 11, 0.14); }
+
+    .sdb-header { display: flex; justify-content: space-between; align-items: center; }
+    .sdb-tag { font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+    .sdb-tag.accepted { background: var(--success); color: #000; }
+    .sdb-tag.rejected { background: var(--danger); color: #fff; }
+    .sdb-tag.irrelevant { background: var(--chatter); color: #000; }
+    .sdb-tag.not_approved { background: var(--warning); color: #000; }
+
+    .sdb-time { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim); }
+    .sdb-row { font-size: 0.78rem; display: flex; flex-direction: column; gap: 2px; }
+    .sdb-label { font-size: 0.68rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+    .sdb-val { color: #fff; font-weight: 600; font-style: italic; }
+    .sdb-reason-box { font-size: 0.78rem; color: #cbd5e1; line-height: 1.45; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px; margin-top: 2px; }
+
     /* Trace Section */
     .trace-card pre {
       background: #040608;
@@ -673,6 +702,26 @@
         <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 10px;">
           Simulate judges testing dynamic changes, casual chatter, or adversarial attacks.
         </p>
+
+        <!-- Live Instant Decision Card (Updates right here on every submit!) -->
+        <div id="sideDecisionBox" class="side-decision-box" style="display:none;">
+          <div class="sdb-header">
+            <span id="sdbStatusTag" class="sdb-tag">EVALUATED</span>
+            <span id="sdbTime" class="sdb-time">Just now</span>
+          </div>
+          <div class="sdb-row">
+            <span class="sdb-label">You Entered:</span>
+            <span id="sdbUserText" class="sdb-val">"..."</span>
+          </div>
+          <div class="sdb-row">
+            <span class="sdb-label">Detected Role &amp; Sender:</span>
+            <span id="sdbRole" class="sdb-val" style="font-style:normal; font-size:0.75rem;">-</span>
+          </div>
+          <div class="sdb-reason-box" id="sdbReason">
+            ...
+          </div>
+        </div>
+
         <textarea id="msgInput" rows="3" placeholder="Type custom message in English or Roman Urdu..."></textarea>
         <button id="btnSendMsg" style="width: 100%;">Evaluate Message Instantly</button>
 
@@ -983,6 +1032,25 @@
           `;
         }
         timeSpan.textContent = verdict.evaluatedAt ? new Date(verdict.evaluatedAt).toLocaleTimeString() : 'Just now';
+
+        // Update Side Decision Box right above the input
+        const sideBox = document.getElementById('sideDecisionBox');
+        const sdbTag = document.getElementById('sdbStatusTag');
+        const sdbTime = document.getElementById('sdbTime');
+        const sdbUserText = document.getElementById('sdbUserText');
+        const sdbRole = document.getElementById('sdbRole');
+        const sdbReason = document.getElementById('sdbReason');
+
+        if (sideBox && verdict.rawText && verdict.rawText.trim()) {
+          sideBox.style.display = 'flex';
+          sideBox.className = 'side-decision-box ' + vStatus.toLowerCase();
+          sdbTag.className = 'sdb-tag ' + vStatus.toLowerCase();
+          sdbTag.textContent = vStatus === 'ACCEPTED' ? '✅ ACCEPTED' : (vStatus === 'REJECTED' ? '🚫 REJECTED' : (vStatus.includes('IRRELEVANT') ? '💬 CHATTER' : '🟡 NOT APPROVED'));
+          sdbTime.textContent = verdict.evaluatedAt ? new Date(verdict.evaluatedAt).toLocaleTimeString() : 'Just now';
+          sdbUserText.textContent = `"${verdict.rawText.trim()}"`;
+          sdbRole.textContent = `${verdict.sender || 'Unknown'} (Role: ${verdict.role || 'other'})`;
+          sdbReason.textContent = verdict.reason || (vStatus === 'ACCEPTED' ? 'Valid update applied to active plan.' : 'Conflict or non-planning message.');
+        }
       }
 
       if (!plan || plan.status !== "VALID") {
@@ -1105,7 +1173,7 @@
           playVerdictSound(resData.verdict.status);
         }
         document.getElementById('msgInput').value = '';
-        await loadData();
+        render(resData);
       } finally {
         document.getElementById('btnSendMsg').textContent = 'Evaluate Message Instantly';
       }
